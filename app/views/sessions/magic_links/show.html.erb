@@ -1,0 +1,89 @@
+<div class="min-h-screen flex items-center justify-center px-4"
+     x-data="{
+       shake: <%= flash[:shake].to_s %>,
+       handleInput(event) {
+         const input = event.target;
+         input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+         if (input.value.length === 6) {
+           input.form.submit();
+         }
+       },
+       handlePaste(event) {
+         event.preventDefault();
+         const paste = (event.clipboardData || window.clipboardData).getData('text');
+         const cleaned = paste.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+         event.target.value = cleaned;
+         if (cleaned.length === 6) {
+           event.target.form.submit();
+         }
+       },
+       autofill(code, form) {
+         const input = form.querySelector('input[name=code]');
+         input.value = code;
+         form.submit();
+       }
+     }">
+  <div class="max-w-md w-full space-y-8"
+       :class="{ 'animate-shake': shake }">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-gray-900">Check your email</h1>
+      <p class="mt-2 text-sm text-gray-600">
+        We sent a code to <strong><%= email_address_pending_authentication %></strong>
+      </p>
+    </div>
+
+    <%= form_with url: session_magic_link_path, method: :post, 
+      class: "mt-8 space-y-6" do |f| %>
+      
+      <div>
+        <%= f.label :code, "Enter the 6-digit code", class: "block text-sm font-medium text-gray-700 mb-2 text-center" %>
+        <%= f.text_field :code,
+          autofocus: true,
+          maxlength: 6,
+          autocomplete: "off",
+          spellcheck: false,
+          data: {
+            "1p-ignore": true,
+            lpignore: true,
+            bwignore: true,
+            "protonpass-ignore": true
+          },
+          "@input": "handleInput",
+          "@paste": "handlePaste",
+          class: "block w-full px-4 py-3 text-center text-3xl font-mono font-bold tracking-[0.5em] uppercase border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+
+      <%= f.submit "Verify", class: "hidden" %>
+    <% end %>
+
+    <div class="text-center">
+      <p class="text-sm text-gray-600">
+        Didn't get the email? 
+        <%= link_to "Try again", new_session_path(email: email_address_pending_authentication), class: "text-blue-600 hover:text-blue-700 font-medium" %>
+      </p>
+    </div>
+
+    <% if Rails.env.development? && flash[:magic_link_code] %>
+      <div class="mt-4 p-4 bg-yellow-100 border border-yellow-400 rounded-md">
+        <p class="text-sm text-yellow-800 mb-2">Development mode - code auto-fill:</p>
+        <button type="button" 
+          @click="autofill('<%= flash[:magic_link_code] %>', $el.closest('div').previousElementSibling)"
+          class="w-full px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 font-mono text-lg">
+          <%= flash[:magic_link_code] %>
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+  }
+  
+  .animate-shake {
+    animation: shake 0.5s;
+  }
+</style>

@@ -14,4 +14,15 @@ Rails.application.routes.draw do
   
   # UI Test page (Phase 4 verification)
   get "ui_test" => "ui_test#index"
+  
+  # Authentication (Phase 5)
+  resource :session, only: [:new, :create, :destroy] do
+    scope module: :sessions do
+      resource :magic_link, only: [:show, :create]
+    end
+  end
+
+  # Redirect old paths
+  get "/users/sign_in", to: redirect("/session/new")
+  get "/users/sign_up", to: redirect("/session/new")
 end

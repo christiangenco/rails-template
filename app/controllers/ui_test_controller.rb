@@ -1,4 +1,6 @@
 class UiTestController < ApplicationController
+  allow_unauthenticated_access
+
   def index
     # Handle flash messages from URL params
     flash.now[:notice] = params[:notice] if params[:notice].present?

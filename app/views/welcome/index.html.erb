@@ -1,0 +1,21 @@
+<h1 class="text-2xl font-bold mb-4">Alpine.js + Turbo Test</h1>
+
+<div x-data="{ open: false }" class="mb-4">
+  <button @click="open = !open" class="bg-blue-500 text-white px-4 py-2 rounded">Toggle</button>
+  <p x-show="open" class="mt-2">Hello from Alpine.js!</p>
+</div>
+
+<div class="mb-4">
+  <button @click="window.showModal({ title: 'Test Modal', description: 'This is a test modal', buttonText: 'OK', theme: 'primary' })" class="bg-green-500 text-white px-4 py-2 rounded">
+    Test Modal
+  </button>
+</div>
+
+<div class="mb-4">
+  <p>Open browser console and check:</p>
+  <ul class="list-disc ml-6">
+    <li>No JavaScript errors</li>
+    <li><code>window.Alpine</code> is defined</li>
+    <li><code>window.showModal</code> is defined</li>
+  </ul>
+</div>

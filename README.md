@@ -1,15 +1,38 @@
-# README
+# Rails Template
 
-Rails template application with SQLite, Kamal deployment, and Litestream backups.
+A modern Rails 8 application template with SQLite, Alpine.js, Tailwind CSS, passwordless authentication, and team-based multi-tenancy.
 
-## Ruby version
+## Features
 
-Ruby 3.4.1
+- **Rails 8** with all-SQLite architecture (primary, queue, cache, cable)
+- **Passwordless authentication** via email magic codes
+- **Team-based multi-tenancy** with automatic personal team creation
+- **Modern frontend**: Alpine.js + Turbo + Tailwind CSS v4
+- **Rich text editing** with Action Text and Trix
+- **File uploads** with Active Storage
+- **Background jobs** with Solid Queue
+- **Deployment**: Kamal 2 with Litestream SQLite backups
 
-## System dependencies
+See [AGENTS.md](./AGENTS.md) for detailed architecture documentation and development guidelines.
 
+## Prerequisites
+
+- Ruby 3.4.1
 - SQLite 3
 - Docker (for deployment)
+
+## Getting Started
+
+1. Clone the repository
+2. Run the setup script:
+   ```bash
+   bin/setup
+   ```
+3. Start the development server:
+   ```bash
+   bin/dev
+   ```
+4. Visit `http://localhost:3000`
 
 ## Configuration
 
@@ -26,11 +49,6 @@ This app uses SQLite for all databases:
 - Queue: `storage/production_queue.sqlite3`
 - Cache: `storage/production_cache.sqlite3`
 - Cable: `storage/production_cable.sqlite3`
-
-Setup:
-```bash
-bin/rails db:setup
-```
 
 ## Development
 

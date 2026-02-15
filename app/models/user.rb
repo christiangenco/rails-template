@@ -21,8 +21,8 @@ class User < ApplicationRecord
   end
 
   def admin?
-    # TODO: Replace with your admin email(s)
-    false
+    # Add your admin email(s) here
+    %w[admin@example.com].include?(email)
   end
 
   def personal_team

@@ -5,6 +5,21 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Error routes (Phase 13)
+  match "/404", to: "errors#not_found", via: :all
+  match "/422", to: "errors#unprocessable", via: :all
+  match "/500", to: "errors#internal_error", via: :all
+
+  # Admin impersonation (Phase 13)
+  post "impersonate/:id", to: "admin#impersonate", as: :impersonate
+  post "stop_impersonating", to: "admin#stop_impersonating", as: :stop_impersonating
+
+  # Dev error routes (development only, Phase 13)
+  if Rails.env.development?
+    get "dev/errors/404", to: "dev_errors#not_found"
+    get "dev/errors/500", to: "dev_errors#internal_error"
+  end
+
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker

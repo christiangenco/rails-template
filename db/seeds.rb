@@ -1,9 +1,19 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+if Rails.env.development?
+  puts "Seeding development data..."
+
+  # Create admin user
+  admin = User.find_or_create_by!(email: "admin@example.com") do |u|
+    u.name = "Admin User"
+  end
+
+  # Create a few example posts
+  team = admin.default_team
+  3.times do |i|
+    team.posts.find_or_create_by!(title: "Example Post #{i + 1}") do |post|
+      post.created_by = admin
+      post.body = "<p>This is example post #{i + 1}. It was seeded for development.</p>"
+    end
+  end
+
+  puts "Done! Admin user: admin@example.com"
+end

@@ -17,3 +17,6 @@ window.showModal = showModal
 
 // Override Turbo's confirm with our Alpine modal
 import "utils/turbo_confirm"
+
+import "trix"
+import "@rails/actiontext"

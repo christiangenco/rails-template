@@ -176,6 +176,19 @@ class TailwindFormBuilder < ActionView::Helpers::FormBuilder
     end
   end
   
+  def rich_text_area(method, **options)
+    label_text = options.delete(:label)
+    help_text = options.delete(:help)
+    wrapper_options = options.delete(:wrapper_options) || {}
+    
+    render_field_wrapper(method, label_text, help_text, wrapper_options) do
+      # Use ActionText's rich_text_area helper
+      @template.rich_text_area(@object_name, method,
+        options.except(:label, :help, :wrapper_options)
+      )
+    end
+  end
+  
   def submit(value = nil, **options)
     variant = options.delete(:variant) || :primary
     size = options.delete(:size) || :md
@@ -211,6 +224,7 @@ class TailwindFormBuilder < ActionView::Helpers::FormBuilder
     when :number then number_field(method, **options)
     when :date then date_field(method, **options)
     when :text_area then text_area(method, **options)
+    when :rich_text_area then rich_text_area(method, **options)
     when :select then select(method, options.delete(:collection), **options)
     when :check_box then check_box(method, **options)
     when :file then file_field(method, **options)

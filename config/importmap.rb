@@ -8,3 +8,5 @@ pin "@alpinejs/collapse", to: "https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3
 
 pin_all_from "app/javascript/alpine", under: "alpine"
 pin_all_from "app/javascript/utils", under: "utils"
+pin "trix"
+pin "@rails/actiontext", to: "actiontext.esm.js"

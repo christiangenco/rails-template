@@ -11,6 +11,8 @@ Rails.application.routes.draw do
 
   # Team-scoped routes (Phase 6)
   scope "/teams/:team_id", constraints: { team_id: /\d+/ } do
+    resources :posts
+    
     namespace :settings, module: "teams/settings" do
       resource :general, only: [:show, :update], controller: "general"
       resources :memberships, only: [:index, :update, :destroy]

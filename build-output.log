@@ -2072,3 +2072,64 @@ Perfect! Phase 9 (Background Jobs) has been **completely implemented** and verif
 All background job infrastructure is now in place and ready to use! 🎉
 10:15:55 [0;34m[META][0m Verifying phase 09...
 10:15:59 [0;32m[META][0m ✅ Phase 09 (background-jobs) — PASSED
+[master 895bf84] Phase 09: background-jobs
+ 9 files changed, 117 insertions(+), 8 deletions(-)
+ create mode 100644 app/jobs/magic_link_cleanup_job.rb
+
+10:15:59 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+10:15:59 [0;34m[META][0m [1m  PHASE 10: example-resource-posts[0m
+10:15:59 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+
+10:15:59 [0;34m[META][0m Attempt 1/3
+10:15:59 [0;34m[META][0m Invoking pi to implement phase 10...
+## Phase 10 Implementation Summary
+
+**✅ Phase 10: Example Resource (Posts) - COMPLETE**
+
+All steps from the plan have been implemented successfully:
+
+### What Was Built:
+
+1. **Post Model** - Team-scoped resource with:
+   - Title validation
+   - Rich text body (ActionText)
+   - Cover image attachment (ActiveStorage)
+   - Association with Team and User (created_by)
+   - `newest_first` scope for ordering
+
+2. **PostsController** - Full CRUD with:
+   - TeamScoped concern integration
+   - Pagination (10 posts per page)
+   - Proper flash messages
+   - Team-scoped queries for security
+
+3. **Complete View Set**:
+   - Index page with post listing and pagination
+   - Show page with full post display
+   - New/Edit forms using TailwindFormBuilder
+   - File upload preview support
+   - Rich text editor integration
+   - Delete confirmation modal
+
+4. **Navigation Integration**:
+   - Added Posts link to main navigation (desktop & mobile)
+   - Fixed Profile links to use actual routes
+   - Updated default authenticated path to redirect to Posts index
+
+### Verification Results:
+
+- ✅ All 8 view files created
+- ✅ Post model with rich text and file attachments working
+- ✅ Team association configured
+- ✅ Controller includes TeamScoped concern
+- ✅ All 7 RESTful routes registered
+- ✅ Validations working (title presence)
+- ✅ Scopes working (newest_first)
+- ✅ 4 test posts created in database
+- ✅ Rich text rendering with Tailwind Typography
+- ✅ Navigation updated with working links
+- ✅ Default authentication redirect configured
+
+The Posts resource now serves as a complete reference implementation for adding new team-scoped resources to the application, demonstrating pagination, rich text editing, file uploads, and the TailwindFormBuilder pattern.
+10:20:01 [0;34m[META][0m Verifying phase 10...
+10:20:05 [0;32m[META][0m ✅ Phase 10 (example-resource-posts) — PASSED

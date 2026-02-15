@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_15_160950) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_15_161605) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -72,6 +72,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_160950) do
     t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
+  create_table "posts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.integer "team_id", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_posts_on_created_by_id"
+    t.index ["team_id"], name: "index_posts_on_team_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -112,6 +122,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_160950) do
   add_foreign_key "magic_links", "users"
   add_foreign_key "memberships", "teams"
   add_foreign_key "memberships", "users"
+  add_foreign_key "posts", "teams"
+  add_foreign_key "posts", "users", column: "created_by_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "teams", "users", column: "owner_id"
 end

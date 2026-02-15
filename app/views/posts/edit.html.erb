@@ -1,0 +1,4 @@
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">Edit Post</h1>
+  <%= render "form", post: @post, url: post_path(@post, team_id: Current.team.id), method: :patch, submit_text: "Update Post" %>
+</div>

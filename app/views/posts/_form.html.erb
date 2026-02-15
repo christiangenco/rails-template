@@ -1,0 +1,13 @@
+<%= tailwind_form_for(@post, url: url, method: method, data: { controller: nil }) do |f| %>
+  <%= f.text_field :title, autofocus: true %>
+  <%= f.rich_text_area :body, label: "Content" %>
+  <%= f.file_field :cover_image, label: "Cover Image", preview: true,
+    current_attachment: @post.cover_image, help: "Optional. Displayed at the top of the post." %>
+
+  <div class="flex items-center gap-4 pt-4">
+    <%= f.submit submit_text, icon: "check" %>
+    <%= link_to "Cancel",
+      (@post.persisted? ? post_path(@post, team_id: Current.team.id) : posts_path(team_id: Current.team.id)),
+      class: "text-sm text-gray-600 hover:text-gray-500 dark:text-gray-400" %>
+  </div>
+<% end %>

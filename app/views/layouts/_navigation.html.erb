@@ -22,7 +22,10 @@
         <%# Desktop nav links (logged in only) %>
         <% if logged_in %>
           <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
-            <%= link_to "Posts", "#", class: "inline-flex items-center px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400" %>
+            <%= link_to posts_path(team_id: current_or_default_team.id), class: "inline-flex items-center gap-x-2 px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400" do %>
+              <%= icon "document-text", class: "size-5 text-gray-500" %>
+              Posts
+            <% end %>
           </div>
         <% end %>
       </div>
@@ -103,7 +106,7 @@
               x-transition
               class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
             >
-              <%= link_to "Profile", "#", class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+              <%= link_to "Profile", profile_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
               <% team = Current.team || current_user.default_team %>
               <% if team %>
                 <%= link_to "Team Settings", settings_general_path(team), class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
@@ -138,11 +141,11 @@
   <div x-show="mobileMenuOpen" x-cloak class="sm:hidden border-t border-gray-200 dark:border-gray-800">
     <div class="space-y-1 px-4 pb-3 pt-2">
       <% if logged_in %>
-        <%= link_to "Posts", "#", class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
+        <%= link_to "Posts", posts_path(team_id: current_or_default_team.id), class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
         
         <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
         
-        <%= link_to "Profile", "#", class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
+        <%= link_to "Profile", profile_path, class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
         <% team = Current.team || current_user.default_team %>
         <% if team %>
           <%= link_to "Team Settings", settings_general_path(team), class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>

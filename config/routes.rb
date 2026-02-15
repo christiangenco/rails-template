@@ -11,4 +11,7 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "welcome#index"
+  
+  # UI Test page (Phase 4 verification)
+  get "ui_test" => "ui_test#index"
 end

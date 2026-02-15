@@ -1,0 +1,61 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<%# Favicon %>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<%# Title %>
+<% if content_for?(:title) %>
+  <title><%= yield(:title) %> - MyApp</title>
+<% else %>
+  <title>MyApp - Rails Template</title>
+<% end %>
+
+<%# Description %>
+<% if content_for?(:description) %>
+  <meta name="description" content="<%= yield(:description) %>">
+<% else %>
+  <meta name="description" content="A modern Rails 8 application template">
+<% end %>
+
+<%# Canonical URL %>
+<% if content_for?(:canonical_url) %>
+  <link rel="canonical" href="<%= yield(:canonical_url) %>">
+<% end %>
+
+<%# Open Graph %>
+<meta property="og:title" content="<%= content_for?(:og_title) ? yield(:og_title) : (content_for?(:title) ? "#{yield(:title)} - MyApp" : "MyApp - Rails Template") %>">
+<meta property="og:description" content="<%= content_for?(:og_description) ? yield(:og_description) : (content_for?(:description) ? yield(:description) : "A modern Rails 8 application template") %>">
+<meta property="og:type" content="<%= content_for?(:og_type) ? yield(:og_type) : 'website' %>">
+<% if content_for?(:og_url) %>
+  <meta property="og:url" content="<%= yield(:og_url) %>">
+<% end %>
+<% if content_for?(:og_image) %>
+  <meta property="og:image" content="<%= yield(:og_image) %>">
+<% end %>
+
+<%# Twitter Card %>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= content_for?(:og_title) ? yield(:og_title) : (content_for?(:title) ? "#{yield(:title)} - MyApp" : "MyApp - Rails Template") %>">
+<meta name="twitter:description" content="<%= content_for?(:og_description) ? yield(:og_description) : (content_for?(:description) ? yield(:description) : "A modern Rails 8 application template") %>">
+<% if content_for?(:og_image) %>
+  <meta name="twitter:image" content="<%= yield(:og_image) %>">
+<% end %>
+
+<%# Article-specific OG tags %>
+<% if content_for?(:og_published_time) %>
+  <meta property="article:published_time" content="<%= yield(:og_published_time) %>">
+<% end %>
+<% if content_for?(:og_modified_time) %>
+  <meta property="article:modified_time" content="<%= yield(:og_modified_time) %>">
+<% end %>
+
+<%# Structured data %>
+<%= yield(:structured_data) %>
+
+<%# RSS Feed %>
+<% if content_for?(:rss_feed) %>
+  <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="<%= yield(:rss_feed) %>">
+<% end %>

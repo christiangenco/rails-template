@@ -1,0 +1,49 @@
+<%
+  # Usage: 
+  # render "shared/horizontal_tabs", tabs: [
+  #   { label: "Overview", path: overview_path, icon: "home" },
+  #   { label: "Settings", path: settings_path, icon: "cog-6-tooth" }
+  # ], current_path: request.path
+  
+  tabs = local_assigns[:tabs] || []
+  current_path = local_assigns[:current_path] || request.path
+%>
+
+<div class="border-b border-gray-200 dark:border-gray-800">
+  <%# Desktop: horizontal tabs %>
+  <nav class="hidden sm:flex -mb-px space-x-8" aria-label="Tabs">
+    <% tabs.each do |tab| %>
+      <% is_current = tab[:path] == current_path %>
+      <%= link_to tab[:path], 
+        class: [
+          "group inline-flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap",
+          is_current ? 
+            "border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400" : 
+            "border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-700 dark:hover:text-gray-300"
+        ].join(" "),
+        aria_current: (is_current ? "page" : nil) do %>
+        <% if tab[:icon] %>
+          <%= icon(tab[:icon], class: "size-5") %>
+        <% end %>
+        <span><%= tab[:label] %></span>
+      <% end %>
+    <% end %>
+  </nav>
+
+  <%# Mobile: dropdown select %>
+  <div class="sm:hidden">
+    <label for="tabs" class="sr-only">Select a tab</label>
+    <select
+      id="tabs"
+      name="tabs"
+      class="block w-full rounded-lg border-0 py-2 pl-3 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-500 sm:text-sm sm:leading-6"
+      onchange="window.location.href = this.value"
+    >
+      <% tabs.each do |tab| %>
+        <option value="<%= tab[:path] %>" <%= "selected" if tab[:path] == current_path %>>
+          <%= tab[:label] %>
+        </option>
+      <% end %>
+    </select>
+  </div>
+</div>

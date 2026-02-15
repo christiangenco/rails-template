@@ -1,0 +1,147 @@
+<% content_for :title, "UI Helpers Test" %>
+
+<div class="space-y-12">
+  <%= h1 "UI Helpers Test" %>
+  
+  <%# Headings %>
+  <div class="space-y-4">
+    <%= h2 "Headings" %>
+    <%= h1 "Heading 1" %>
+    <%= h2 "Heading 2" %>
+    <%= h3 "Heading 3" %>
+    <%= h4 "Heading 4" %>
+    <%= h5 "Heading 5" %>
+    <%= h6 "Heading 6" %>
+  </div>
+
+  <%# Buttons %>
+  <div class="space-y-4">
+    <%= h2 "Buttons" %>
+    <div class="flex flex-wrap gap-3">
+      <%= btn "Primary", variant: :primary %>
+      <%= btn "Danger", variant: :danger %>
+      <%= btn "Success", variant: :success %>
+      <%= btn "Warning", variant: :warning %>
+    </div>
+    
+    <div class="flex flex-wrap gap-3">
+      <%= btn "Primary Outline", variant: :primary, outline: true %>
+      <%= btn "Danger Outline", variant: :danger, outline: true %>
+      <%= btn "Success Outline", variant: :success, outline: true %>
+      <%= btn "Warning Outline", variant: :warning, outline: true %>
+    </div>
+    
+    <div class="flex flex-wrap gap-3">
+      <%= btn "XS", size: :xs %>
+      <%= btn "Small", size: :sm %>
+      <%= btn "Medium", size: :md %>
+      <%= btn "Large", size: :lg %>
+    </div>
+    
+    <div class="flex flex-wrap gap-3">
+      <%= btn "With Icon", icon: "home" %>
+      <%= btn "Right Icon", right_icon: "arrow-right" %>
+      <%= btn "Both Icons", icon: "home", right_icon: "arrow-right" %>
+      <%= btn "Disabled", disabled: true %>
+    </div>
+  </div>
+
+  <%# Copy Buttons %>
+  <div class="space-y-4">
+    <%= h2 "Copy Buttons" %>
+    <div class="flex flex-wrap gap-3">
+      <%= copy_btn "Hello, World!" %>
+      <%= copy_btn "Copy this text", text: "Copy", copied_text: "Copied!" %>
+      <%= copy_btn "Copy", icon_only: true %>
+      <%= copy_btn "Plain copy", plain: true %>
+    </div>
+  </div>
+
+  <%# Pills %>
+  <div class="space-y-4">
+    <%= h2 "Pills" %>
+    <div class="flex flex-wrap gap-3">
+      <%= pill "Primary", variant: :primary %>
+      <%= pill "Success", variant: :success %>
+      <%= pill "Danger", variant: :danger %>
+      <%= pill "Warning", variant: :warning %>
+      <%= pill "Gray", variant: :gray %>
+    </div>
+  </div>
+
+  <%# Time Tags %>
+  <div class="space-y-4">
+    <%= h2 "Time Tags" %>
+    <p><%= time_tag_ago 2.hours.ago %></p>
+    <p><%= time_tag_ago 1.day.ago %></p>
+    <p><%= time_tag_ago 1.week.ago %></p>
+    <p><%= time_tag_ago nil %></p>
+  </div>
+
+  <%# Form Fields %>
+  <div class="space-y-4">
+    <%= h2 "Form Fields" %>
+    
+    <%= tailwind_form_with url: "#", method: :post do |f| %>
+      <%= f.text_field :name, label: "Name", placeholder: "Enter your name" %>
+      <%= f.email_field :email, label: "Email", help: "We'll never share your email" %>
+      <%= f.password_field :password, label: "Password" %>
+      <%= f.text_area :bio, label: "Bio", help: "Tell us about yourself" %>
+      
+      <%= f.text_field :search, label: "Search", leading_icon: "magnifying-glass" %>
+      <%= f.text_field :website, label: "Website", trailing_icon: "globe-alt" %>
+      <%= f.text_field :price, label: "Price", addon: "USD" %>
+      
+      <%= f.select :country, [["United States", "US"], ["Canada", "CA"], ["Mexico", "MX"]], { include_blank: "Select a country" }, label: "Country" %>
+      
+      <%= f.check_box :terms, label: "I agree to the terms and conditions", help: "You must agree to continue" %>
+      
+      <%= f.radio_button :size, "small", label: "Small", help: "Perfect for personal use" %>
+      <%= f.radio_button :size, "medium", label: "Medium", help: "Great for teams" %>
+      <%= f.radio_button :size, "large", label: "Large", help: "For enterprises" %>
+      
+      <%= f.file_field :avatar, label: "Avatar", preview: true %>
+      <%= f.color_field :color, label: "Favorite Color" %>
+      
+      <%= f.submit "Submit Form" %>
+    <% end %>
+  </div>
+
+  <%# Horizontal Tabs %>
+  <div class="space-y-4">
+    <%= h2 "Horizontal Tabs" %>
+    <%= render "shared/horizontal_tabs", tabs: [
+      { label: "Overview", path: "/ui_test", icon: "home" },
+      { label: "Settings", path: "/ui_test?tab=settings", icon: "cog-6-tooth" },
+      { label: "Members", path: "/ui_test?tab=members", icon: "users" }
+    ], current_path: request.path %>
+  </div>
+
+  <%# Modal Trigger %>
+  <div class="space-y-4">
+    <%= h2 "Modal" %>
+    <%= btn "Show Primary Modal", 
+      "@click": "showModal({ title: 'Primary Modal', message: 'This is a primary themed modal.', buttonText: 'Got it', theme: 'primary' })" %>
+    <%= btn "Show Success Modal", 
+      variant: :success,
+      "@click": "showModal({ title: 'Success!', message: 'Operation completed successfully.', buttonText: 'Great', theme: 'success' })" %>
+    <%= btn "Show Warning Modal", 
+      variant: :warning,
+      "@click": "showModal({ title: 'Warning', message: 'Are you sure about this?', buttonText: 'Continue', theme: 'warning' })" %>
+    <%= btn "Show Danger Modal", 
+      variant: :danger,
+      "@click": "showModal({ title: 'Delete', message: 'This action cannot be undone.', buttonText: 'Delete', theme: 'danger' })" %>
+  </div>
+
+  <%# Flash Messages Test %>
+  <div class="space-y-4">
+    <%= h2 "Flash Messages" %>
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      Flash messages are shown at the top-right corner. Trigger them by visiting:
+    </p>
+    <div class="flex flex-wrap gap-3">
+      <%= btn "Show Notice", href: "/ui_test?notice=This+is+a+success+message" %>
+      <%= btn "Show Alert", variant: :danger, href: "/ui_test?alert=This+is+an+error+message" %>
+    </div>
+  </div>
+</div>

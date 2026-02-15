@@ -593,3 +593,80 @@ All steps from the plan have been implemented successfully:
 The Posts resource now serves as a complete reference implementation for adding new team-scoped resources to the application, demonstrating pagination, rich text editing, file uploads, and the TailwindFormBuilder pattern.
 10:20:01 [0;34m[META][0m Verifying phase 10...
 10:20:05 [0;32m[META][0m ✅ Phase 10 (example-resource-posts) — PASSED
+10:20:05 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+10:20:05 [0;34m[META][0m [1m  PHASE 11: landing-page-and-articles[0m
+10:20:05 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+10:20:05 [0;34m[META][0m Attempt 1/3
+10:20:05 [0;34m[META][0m Invoking pi to implement phase 11...
+Perfect! Phase 11: Landing Page & Articles has been successfully implemented. Here's a summary of what was completed:
+
+## ✅ Implementation Summary
+
+### Created Files
+
+1. **HomeController** (`app/controllers/home_controller.rb`)
+   - Redirects logged-in users to their team's posts
+   - Shows marketing landing page to logged-out users
+
+2. **Landing Page** (`app/views/home/index.html.erb`)
+   - Hero section with CTA
+   - Features section (6 features in 3-column grid)
+   - Testimonials section (3 testimonials with gravatars)
+   - FAQ section (6 Q&A pairs in 2-column grid)
+   - Bottom CTA section
+   - Full-width layout using `content_for(:naked)`
+
+3. **Article Model** (`app/models/article.rb`)
+   - Plain Old Ruby Object (not ActiveRecord)
+   - Reads articles from `app/views/articles/content/*.html.erb`
+   - Parses YAML front matter
+   - Supports filtering published articles
+   - Date handling and metadata
+
+4. **ArticlesController** (`app/controllers/articles_controller.rb`)
+   - Index action with HTML and RSS format support
+   - Show action for individual articles
+   - Allows unauthenticated access
+
+5. **Article Views**
+   - **Index** (`app/views/articles/index.html.erb`) - Lists all published articles
+   - **Show** (`app/views/articles/show.html.erb`) - Displays individual article with Tailwind Typography
+   - **RSS Feed** (`app/views/articles/index.rss.builder`) - XML feed for RSS readers
+
+6. **Example Articles**
+   - `getting-started.html.erb` - Comprehensive onboarding guide
+   - `welcome.html.erb` - Introduction to MyApp features
+
+### Modified Files
+
+1. **Routes** (`config/routes.rb`)
+   - Changed root from `welcome#index` to `home#index`
+   - Added articles routes at `/a` path
+   - RSS feed available at `/a.rss`
+
+2. **Navigation** (`app/views/layouts/_navigation.html.erb`)
+   - Added "Articles" link for logged-out users (desktop and mobile)
+   - Positioned between dark mode toggle and login button
+
+3. **Meta Tags** (`app/views/layouts/_meta.html.erb`)
+   - Added RSS feed discovery link
+
+## ✅ Verification Results
+
+All verification checks passed:
+
+- ✅ Landing page displays for logged-out users with all sections
+- ✅ Hero, Features, Testimonials, FAQ, and CTA sections render correctly
+- ✅ Articles index at `/a` shows both published articles
+- ✅ Article show page at `/a/getting-started` renders with Tailwind Typography
+- ✅ Article content includes headings, paragraphs, links, lists, bold text
+- ✅ Dark mode works on all marketing pages
+- ✅ RSS feed available at `/a.rss` with proper XML structure
+- ✅ RSS discovery link in HTML `<head>`
+- ✅ "Articles" link appears in navigation for logged-out users
+- ✅ HomeController redirects logged-in users to posts (code verified)
+- ✅ Meta tags (title, description) set correctly
+
+The file-based article system is fully functional, allowing you to add new articles simply by creating HTML files with YAML front matter in `app/views/articles/content/`.
+10:26:56 [0;34m[META][0m Verifying phase 11...
+10:26:59 [0;32m[META][0m ✅ Phase 11 (landing-page-and-articles) — PASSED

@@ -1,0 +1,223 @@
+<% content_for :title, "MyApp — Build Something Amazing" %>
+<% content_for :description, "MyApp helps teams collaborate and ship faster. Start for free." %>
+
+<% content_for :naked do %>
+  <!-- Hero -->
+  <div class="bg-white dark:bg-gray-950">
+    <div class="mx-auto max-w-2xl px-6 py-24 sm:py-32 lg:px-8 text-center">
+      <h1 class="text-4xl font-semibold tracking-tight text-balance text-gray-900 dark:text-gray-100 sm:text-6xl">
+        Build something amazing
+      </h1>
+      <p class="mt-8 text-lg text-gray-600 dark:text-gray-300 text-pretty sm:text-xl/8">
+        MyApp helps teams collaborate, organize, and ship faster. Start for free — no credit card required.
+      </p>
+      <div class="mt-10 flex items-center justify-center gap-x-6">
+        <%= btn "Get started", href: new_session_path, size: :lg, icon: "arrow-right" %>
+        <%= link_to "Learn more →", "#features",
+          class: "text-sm/6 font-semibold text-gray-900 dark:text-gray-100" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div id="features" class="bg-gray-50 dark:bg-gray-900 py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <div class="mx-auto max-w-2xl lg:text-center">
+        <h2 class="text-base/7 font-semibold text-blue-600 dark:text-blue-400">Everything you need</h2>
+        <p class="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl lg:text-balance">
+          Powerful features for modern teams
+        </p>
+        <p class="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
+          Built with best practices and the tools you love. Ship faster without compromising on quality.
+        </p>
+      </div>
+      <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+        <dl class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+          <div class="flex flex-col">
+            <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900 dark:text-gray-100">
+              <%= icon "users", class: "size-6 flex-none text-blue-600 dark:text-blue-400" %>
+              Team Collaboration
+            </dt>
+            <dd class="mt-4 flex flex-auto flex-col text-base/7 text-gray-600 dark:text-gray-300">
+              <p class="flex-auto">
+                Invite your team, assign roles, and work together seamlessly. Multi-tenant architecture ensures data isolation and security.
+              </p>
+            </dd>
+          </div>
+          <div class="flex flex-col">
+            <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900 dark:text-gray-100">
+              <%= icon "document-text", class: "size-6 flex-none text-blue-600 dark:text-blue-400" %>
+              Rich Text Editor
+            </dt>
+            <dd class="mt-4 flex flex-auto flex-col text-base/7 text-gray-600 dark:text-gray-300">
+              <p class="flex-auto">
+                Create beautiful content with our rich text editor. Supports formatting, images, attachments, and embeds out of the box.
+              </p>
+            </dd>
+          </div>
+          <div class="flex flex-col">
+            <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900 dark:text-gray-100">
+              <%= icon "shield-check", class: "size-6 flex-none text-blue-600 dark:text-blue-400" %>
+              Secure by Default
+            </dt>
+            <dd class="mt-4 flex flex-auto flex-col text-base/7 text-gray-600 dark:text-gray-300">
+              <p class="flex-auto">
+                Passwordless authentication with email codes. No passwords to forget or compromise. Rate limiting and security best practices built in.
+              </p>
+            </dd>
+          </div>
+          <div class="flex flex-col">
+            <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900 dark:text-gray-100">
+              <%= icon "cloud-arrow-up", class: "size-6 flex-none text-blue-600 dark:text-blue-400" %>
+              File Attachments
+            </dt>
+            <dd class="mt-4 flex flex-auto flex-col text-base/7 text-gray-600 dark:text-gray-300">
+              <p class="flex-auto">
+                Upload and attach files to your content. Powered by Active Storage with automatic image processing and previews.
+              </p>
+            </dd>
+          </div>
+          <div class="flex flex-col">
+            <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900 dark:text-gray-100">
+              <%= icon "moon", class: "size-6 flex-none text-blue-600 dark:text-blue-400" %>
+              Dark Mode
+            </dt>
+            <dd class="mt-4 flex flex-auto flex-col text-base/7 text-gray-600 dark:text-gray-300">
+              <p class="flex-auto">
+                Beautiful dark mode support throughout the entire application. System preference detection with manual override.
+              </p>
+            </dd>
+          </div>
+          <div class="flex flex-col">
+            <dt class="flex items-center gap-x-3 text-base/7 font-semibold text-gray-900 dark:text-gray-100">
+              <%= icon "rocket-launch", class: "size-6 flex-none text-blue-600 dark:text-blue-400" %>
+              Fast & Modern
+            </dt>
+            <dd class="mt-4 flex flex-auto flex-col text-base/7 text-gray-600 dark:text-gray-300">
+              <p class="flex-auto">
+                Built on Rails 8 with Turbo, Alpine.js, and Tailwind CSS. Fast page loads, smooth interactions, and a delightful user experience.
+              </p>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonials -->
+  <div class="bg-white dark:bg-gray-950 py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <div class="mx-auto max-w-2xl lg:text-center">
+        <h2 class="text-base/7 font-semibold text-blue-600 dark:text-blue-400">Testimonials</h2>
+        <p class="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl lg:text-balance">
+          Loved by teams everywhere
+        </p>
+      </div>
+      <div class="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+        <div class="flex flex-col gap-4 rounded-2xl bg-gray-50 dark:bg-gray-900 p-8">
+          <div class="flex items-center gap-4">
+            <img src="<%= gravatar_url("sarah@example.com", size: 48) %>" alt="Sarah Johnson" class="size-12 rounded-full">
+            <div>
+              <div class="font-semibold text-gray-900 dark:text-gray-100">Sarah Johnson</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Head of Product, TechCorp</div>
+            </div>
+          </div>
+          <p class="text-gray-600 dark:text-gray-300">
+            "MyApp transformed how our team collaborates. The passwordless login is so smooth, and the rich text editor is exactly what we needed."
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 rounded-2xl bg-gray-50 dark:bg-gray-900 p-8">
+          <div class="flex items-center gap-4">
+            <img src="<%= gravatar_url("mike@example.com", size: 48) %>" alt="Mike Chen" class="size-12 rounded-full">
+            <div>
+              <div class="font-semibold text-gray-900 dark:text-gray-100">Mike Chen</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Founder, StartupXYZ</div>
+            </div>
+          </div>
+          <p class="text-gray-600 dark:text-gray-300">
+            "We went from idea to production in days. The template had everything we needed — authentication, teams, file uploads. Incredible."
+          </p>
+        </div>
+        <div class="flex flex-col gap-4 rounded-2xl bg-gray-50 dark:bg-gray-900 p-8">
+          <div class="flex items-center gap-4">
+            <img src="<%= gravatar_url("emma@example.com", size: 48) %>" alt="Emma Rodriguez" class="size-12 rounded-full">
+            <div>
+              <div class="font-semibold text-gray-900 dark:text-gray-100">Emma Rodriguez</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">Designer, Creative Co</div>
+            </div>
+          </div>
+          <p class="text-gray-600 dark:text-gray-300">
+            "Finally, a Rails template that doesn't compromise on design. Dark mode looks amazing, and the UI components are beautiful."
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="bg-gray-50 dark:bg-gray-900 py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <div class="mx-auto max-w-2xl lg:text-center">
+        <h2 class="text-base/7 font-semibold text-blue-600 dark:text-blue-400">FAQ</h2>
+        <p class="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-5xl lg:text-balance">
+          Frequently asked questions
+        </p>
+      </div>
+      <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+        <dl class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
+          <div>
+            <dt class="text-base/7 font-semibold text-gray-900 dark:text-gray-100">How does passwordless login work?</dt>
+            <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-300">
+              Enter your email and we'll send you a 6-digit code. Enter the code to sign in — no password needed. It's more secure and easier to use.
+            </dd>
+          </div>
+          <div>
+            <dt class="text-base/7 font-semibold text-gray-900 dark:text-gray-100">Can I invite team members?</dt>
+            <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-300">
+              Yes! You can invite unlimited team members from Team Settings. Each member can have different roles and permissions.
+            </dd>
+          </div>
+          <div>
+            <dt class="text-base/7 font-semibold text-gray-900 dark:text-gray-100">Is my data secure?</dt>
+            <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-300">
+              Absolutely. We use multi-tenant architecture to ensure complete data isolation. All connections are encrypted, and we follow security best practices.
+            </dd>
+          </div>
+          <div>
+            <dt class="text-base/7 font-semibold text-gray-900 dark:text-gray-100">What about file uploads?</dt>
+            <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-300">
+              Active Storage is built in, supporting image processing, previews, and multiple storage backends (local, S3, etc.). Upload files anywhere in your content.
+            </dd>
+          </div>
+          <div>
+            <dt class="text-base/7 font-semibold text-gray-900 dark:text-gray-100">Can I customize the design?</dt>
+            <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-300">
+              Of course! Built with Tailwind CSS v4, you have complete control over colors, spacing, typography, and more. Dark mode is fully customizable too.
+            </dd>
+          </div>
+          <div>
+            <dt class="text-base/7 font-semibold text-gray-900 dark:text-gray-100">How do I get started?</dt>
+            <dd class="mt-2 text-base/7 text-gray-600 dark:text-gray-300">
+              Click "Get started" above to create your account. We'll send you a login code, and you'll be up and running in under a minute.
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="bg-white dark:bg-gray-950">
+    <div class="mx-auto max-w-2xl px-6 py-24 sm:py-32 lg:px-8 text-center">
+      <h2 class="text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
+        Ready to get started?
+      </h2>
+      <p class="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
+        Join thousands of teams building amazing things with MyApp. No credit card required.
+      </p>
+      <div class="mt-10 flex items-center justify-center gap-x-6">
+        <%= btn "Get started for free", href: new_session_path, size: :lg, icon: "arrow-right" %>
+      </div>
+    </div>
+  </div>
+<% end %>

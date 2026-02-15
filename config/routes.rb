@@ -21,7 +21,10 @@ Rails.application.routes.draw do
   end
 
   # Defines the root path route ("/")
-  root "welcome#index"
+  root "home#index"
+  
+  # Articles (Phase 11)
+  resources :articles, path: "a", only: [:index, :show]
   
   # UI Test page (Phase 4 verification)
   get "ui_test" => "ui_test#index"

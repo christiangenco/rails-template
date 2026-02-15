@@ -59,3 +59,4 @@
 <% if content_for?(:rss_feed) %>
   <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="<%= yield(:rss_feed) %>">
 <% end %>
+<link rel="alternate" type="application/rss+xml" title="MyApp Blog" href="<%= articles_url(format: :rss) %>">

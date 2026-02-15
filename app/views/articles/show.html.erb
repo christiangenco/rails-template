@@ -1,0 +1,22 @@
+<% content_for :title, "#{@article.title} | MyApp" %>
+<% if @article.description.present? %>
+  <% content_for :description, @article.description %>
+<% end %>
+
+<div class="mx-auto max-w-4xl py-8">
+  <header class="mb-8 prose lg:prose-xl dark:prose-invert mx-auto">
+    <h1><%= @article.title %></h1>
+    <% if @article.author %>
+      <p class="text-gray-600 dark:text-gray-300"><%= @article.author %></p>
+    <% end %>
+  </header>
+
+  <article class="prose lg:prose-xl dark:prose-invert mx-auto">
+    <%= render inline: @article.body, type: :erb %>
+  </article>
+
+  <footer class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
+    <%= link_to "← Back to articles", articles_path,
+      class: "text-blue-600 dark:text-blue-400 hover:text-blue-800 font-medium" %>
+  </footer>
+</div>

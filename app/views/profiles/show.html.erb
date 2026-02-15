@@ -1,0 +1,20 @@
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Profile</h1>
+</div>
+
+<div class="max-w-2xl">
+  <%= tailwind_form_for(@user, url: profile_path, method: :patch) do |f| %>
+    <%= f.text_field :name, autocomplete: "name" %>
+
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+      <div class="flex items-center gap-4">
+        <span class="text-gray-900 dark:text-gray-100"><%= @user.email %></span>
+        <%= link_to "Change email", new_users_email_address_path,
+          class: "text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400" %>
+      </div>
+    </div>
+
+    <%= f.submit "Save Changes", icon: "check" %>
+  <% end %>
+</div>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #374151;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 30px;
+    }
+    .content {
+      padding: 20px 0;
+    }
+    .alert-box {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    .email-address {
+      font-weight: 600;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="margin: 0; color: #111827;">Email Address Changed</h1>
+  </div>
+
+  <div class="content">
+    <p>Hello,</p>
+    
+    <div class="alert-box">
+      <p style="margin: 0; color: #991b1b;">
+        <strong>Your email address has been successfully changed.</strong>
+      </p>
+    </div>
+    
+    <p>Your email address has been changed from <span class="email-address"><%= @old_email %></span> to <span class="email-address"><%= @user.email %></span>.</p>
+    
+    <p>If you made this change, no further action is needed.</p>
+    
+    <p style="color: #dc2626;">
+      <strong>If you did NOT make this change, your account may have been compromised.</strong> Please contact support immediately.
+    </p>
+  </div>
+
+  <div class="footer">
+    <p>This is a notification email sent to <%= @old_email %> to inform you of the email address change.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Change Email Address</h1>
+</div>
+
+<div class="max-w-2xl">
+  <%= form_with url: users_email_addresses_path, method: :post, class: "space-y-6" do |f| %>
+    <div>
+      <%= label_tag :email_address, "New Email Address", class: "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" %>
+      <%= email_field_tag :email_address, @email_address,
+        autocomplete: "email",
+        class: "block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400" %>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        Current email: <%= current_user.email %>
+      </p>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <%= button_tag type: :submit, class: "inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600" do %>
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        Send confirmation email
+      <% end %>
+      <%= link_to "Cancel", profile_path, class: "text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100" %>
+    </div>
+  <% end %>
+</div>

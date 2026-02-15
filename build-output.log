@@ -1855,3 +1855,86 @@ I've implemented **all** steps from the plan:
 The implementation is complete and ready for Phase 7!
 10:03:33 [0;34m[META][0m Verifying phase 06...
 10:03:37 [0;32m[META][0m ✅ Phase 06 (teams-and-memberships) — PASSED
+[master fa33359] Phase 06: teams-and-memberships
+ 21 files changed, 848 insertions(+), 31 deletions(-)
+ create mode 100644 PHASE_06_COMPLETE.md
+ create mode 100644 PHASE_06_SUMMARY.txt
+ create mode 100644 app/controllers/concerns/team_scoped.rb
+ create mode 100644 app/controllers/teams/settings/base_controller.rb
+ create mode 100644 app/controllers/teams/settings/general_controller.rb
+ create mode 100644 app/controllers/teams/settings/memberships_controller.rb
+ create mode 100644 app/views/teams/settings/_header.html.erb
+ create mode 100644 app/views/teams/settings/general/show.html.erb
+ create mode 100644 app/views/teams/settings/memberships/index.html.erb
+
+10:03:37 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+10:03:37 [0;34m[META][0m [1m  PHASE 07: profile-and-email-change[0m
+10:03:37 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+
+10:03:37 [0;34m[META][0m Attempt 1/3
+10:03:37 [0;34m[META][0m Invoking pi to implement phase 07...
+Perfect! All verification checks passed! Let me create a final summary:
+
+## Phase 7 Implementation Complete ✓
+
+**All requirements from the plan have been successfully implemented:**
+
+### ✅ Controllers (3 created)
+- ProfilesController - Profile management
+- Users::EmailAddressesController - Email change request
+- Users::EmailAddresses::ConfirmationsController - Email change confirmation
+
+### ✅ Models & Concerns (1 created, 1 modified)
+- User::EmailAddressChangeable concern with SignedGlobalID tokens
+- User model updated to include the concern
+
+### ✅ Mailers (1 created)
+- UserMailer with email_change_confirmation and email_changed_notification actions
+
+### ✅ Views (8 created)
+- Profile page with name edit and email display
+- Email change request form
+- "Check your email" confirmation screen
+- Final email change confirmation page
+- 4 email templates (HTML + text for both mailer actions)
+
+### ✅ Routes
+- `/profile` - Profile show/update
+- `/users/email_addresses/new` - Email change form
+- `/users/email_addresses` - Submit email change
+- `/users/email_addresses/:token/confirmation` - Confirm email change
+
+### ✅ Security Features
+- SignedGlobalID tokens (cryptographically signed, 30-min expiration)
+- Token includes old and new email for verification
+- Prevents token reuse after email change
+- Email format validation
+- Duplicate email prevention
+- Notification sent to old email address
+
+### ✅ Verification Results
+```
+25/25 checks passed ✓
+- All controllers created and functional
+- All views created with valid ERB syntax
+- Token generation and verification working
+- Email change flow complete
+- Security measures in place
+- All mailers working with HTML + text versions
+```
+
+### 📁 Files Summary
+- **14 new files created**
+- **2 files modified**
+- **16 total files changed**
+
+### 🧪 Testing Available
+- Mailer previews: http://localhost:3000/rails/mailers/user_mailer
+- Manual testing: Visit /profile (requires authentication)
+- Console testing: `User.first.generate_email_change_token(to: "new@example.com")`
+
+---
+
+**Phase 7 is complete and ready for Phase 8: Active Storage & Action Text**
+10:09:18 [0;34m[META][0m Verifying phase 07...
+10:09:21 [0;32m[META][0m ✅ Phase 07 (profile-and-email-change) — PASSED

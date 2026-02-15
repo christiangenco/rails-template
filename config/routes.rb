@@ -31,6 +31,15 @@ Rails.application.routes.draw do
     end
   end
 
+  # Profile & Email Change (Phase 7)
+  resource :profile, only: [:show, :update]
+
+  namespace :users do
+    resources :email_addresses, only: [:new, :create] do
+      resource :confirmation, only: [:show, :create], module: :email_addresses
+    end
+  end
+
   # Redirect old paths
   get "/users/sign_in", to: redirect("/session/new")
   get "/users/sign_up", to: redirect("/session/new")

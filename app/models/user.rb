@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   include User::Deactivatable
+  include User::EmailAddressChangeable
 
   has_many :magic_links, dependent: :destroy
   has_many :sessions, dependent: :destroy

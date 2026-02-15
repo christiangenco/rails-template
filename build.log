@@ -499,3 +499,41 @@ See `PHASE_08_COMPLETE.md`, `PHASE_08_VERIFICATION.md`, and `PHASE_08_EXECUTION_
 **Ready for Phase 9: Background Jobs!** 🚀
 10:13:25 [0;34m[META][0m Verifying phase 08...
 10:13:28 [0;32m[META][0m ✅ Phase 08 (active-storage-and-action-text) — PASSED
+10:13:28 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+10:13:28 [0;34m[META][0m [1m  PHASE 09: background-jobs[0m
+10:13:28 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+10:13:28 [0;34m[META][0m Attempt 1/3
+10:13:28 [0;34m[META][0m Invoking pi to implement phase 09...
+Perfect! Phase 9 (Background Jobs) has been **completely implemented** and verified. Here's what was done:
+
+## Implementation Summary
+
+### ✅ Files Created/Modified:
+
+1. **config/queue.yml** - Solid Queue configuration with dispatchers and workers
+2. **config/cache.yml** - Solid Cache configuration (created by installer)
+3. **config/cable.yml** - Solid Cable configuration for development and production
+4. **config/recurring.yml** - Recurring jobs configuration with MagicLinkCleanupJob
+5. **config/puma.rb** - Added Solid Queue plugin for in-process execution
+6. **config/environments/development.rb** - Configured Solid Queue adapter
+7. **config/environments/production.rb** - Configured Solid Queue adapter and Solid Cache
+8. **app/jobs/magic_link_cleanup_job.rb** - Job to clean up expired magic links
+9. **db/queue_schema.rb** - Solid Queue database schema
+10. **db/cache_schema.rb** - Solid Cache database schema
+11. **db/cable_schema.rb** - Solid Cable database schema
+12. **bin/jobs** - Updated by installer to use SolidQueue::Cli
+
+### ✅ Verification Results:
+
+- ✅ `bin/jobs` starts the Solid Queue supervisor successfully
+- ✅ Jobs can be enqueued (`MagicLinkCleanupJob.perform_later`)
+- ✅ Jobs are processed successfully (verified with fork/process test)
+- ✅ `Rails.cache` works with Solid Cache (write/read test passed)
+- ✅ ActionCable configured to use Solid Cable
+- ✅ Recurring task configured to run MagicLinkCleanupJob every hour
+- ✅ All SQLite databases created: queue, cache, and cable
+- ✅ Puma plugin configured for single-server deployments with `SOLID_QUEUE_IN_PUMA`
+
+All background job infrastructure is now in place and ready to use! 🎉
+10:15:55 [0;34m[META][0m Verifying phase 09...
+10:15:59 [0;32m[META][0m ✅ Phase 09 (background-jobs) — PASSED

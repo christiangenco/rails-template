@@ -58,14 +58,14 @@
 
         <% if logged_in %>
           <%# Team switcher (if user has multiple teams) %>
-          <% if defined?(current_user) && current_user.teams.count > 1 %>
+          <% if current_user.teams.count > 1 %>
             <div class="relative hidden sm:block" @click.away="teamMenuOpen = false">
               <button
                 type="button"
                 class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 @click="teamMenuOpen = !teamMenuOpen"
               >
-                <span><%= current_or_default_team&.name || "Team" %></span>
+                <span><%= (Current.team || current_user.default_team)&.display_name || "Team" %></span>
                 <%= icon "chevron-down", class: "size-4" %>
               </button>
 
@@ -76,9 +76,8 @@
                 class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
               >
                 <% current_user.teams.each do |team| %>
-                  <%= link_to team.name, team_switch_path(team), 
-                    method: :post,
-                    class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+                  <%= link_to team.display_name, root_path(team_id: team.id), 
+                    class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 #{'bg-gray-100 dark:bg-gray-700' if Current.team == team}" %>
                 <% end %>
               </div>
             </div>
@@ -105,15 +104,18 @@
               class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
             >
               <%= link_to "Profile", "#", class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-              <%= link_to "Team Settings", "#", class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
-              <%= link_to "Team Members", "#", class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+              <% team = Current.team || current_user.default_team %>
+              <% if team %>
+                <%= link_to "Team Settings", settings_general_path(team), class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+                <%= link_to "Team Members", settings_memberships_path(team), class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+              <% end %>
               <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-              <%= button_to "Sign Out", "#", method: :delete, class: "w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
+              <%= button_to "Sign Out", session_path, method: :delete, class: "w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" %>
             </div>
           </div>
         <% else %>
           <%# Login button (logged out) %>
-          <%= link_to "#", class: "hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600" do %>
+          <%= link_to new_session_path, class: "hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600" do %>
             <span>Login</span>
             <%= icon "arrow-right", class: "size-4" %>
           <% end %>
@@ -141,14 +143,17 @@
         <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
         
         <%= link_to "Profile", "#", class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
-        <%= link_to "Team Settings", "#", class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
-        <%= link_to "Team Members", "#", class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
+        <% team = Current.team || current_user.default_team %>
+        <% if team %>
+          <%= link_to "Team Settings", settings_general_path(team), class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
+          <%= link_to "Team Members", settings_memberships_path(team), class: "block px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
+        <% end %>
         
         <div class="border-t border-gray-200 dark:border-gray-700 my-2"></div>
         
-        <%= button_to "Sign Out", "#", method: :delete, class: "w-full text-left px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
+        <%= button_to "Sign Out", session_path, method: :delete, class: "w-full text-left px-3 py-2 text-base font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg" %>
       <% else %>
-        <%= link_to "Login", "#", class: "block px-3 py-2 text-base font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 text-center" %>
+        <%= link_to "Login", new_session_path, class: "block px-3 py-2 text-base font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 text-center" %>
       <% end %>
     </div>
   </div>

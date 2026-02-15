@@ -3,10 +3,12 @@ class CreateMemberships < ActiveRecord::Migration[8.1]
     create_table :memberships do |t|
       t.references :user, null: false, foreign_key: true
       t.references :team, null: false, foreign_key: true
-      t.integer :role
-      t.integer :status
+      t.integer :role, default: 0
+      t.integer :status, default: 0
 
       t.timestamps
     end
+
+    add_index :memberships, [:team_id, :user_id], unique: true
   end
 end

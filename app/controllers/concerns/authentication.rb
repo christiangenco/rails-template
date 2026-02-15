@@ -46,7 +46,11 @@ module Authentication
   end
 
   def default_authenticated_path
-    root_path
+    if Current.user&.default_team
+      root_path(team_id: Current.user.default_team.id)
+    else
+      root_path
+    end
   end
 
   def start_new_session_for(user)

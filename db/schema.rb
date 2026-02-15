@@ -24,11 +24,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_154537) do
 
   create_table "memberships", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.integer "role"
-    t.integer "status"
+    t.integer "role", default: 0
+    t.integer "status", default: 0
     t.integer "team_id", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.index ["team_id", "user_id"], name: "index_memberships_on_team_id_and_user_id", unique: true
     t.index ["team_id"], name: "index_memberships_on_team_id"
     t.index ["user_id"], name: "index_memberships_on_user_id"
   end
@@ -44,9 +45,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_154537) do
 
   create_table "teams", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.integer "kind"
+    t.string "kind", default: "personal"
     t.string "name"
     t.integer "owner_id"
+    t.string "timezone"
     t.datetime "updated_at", null: false
     t.index ["owner_id"], name: "index_teams_on_owner_id"
   end

@@ -1,0 +1,12 @@
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+    <%= @team.display_name %> Settings
+  </h1>
+</div>
+
+<%= render "shared/horizontal_tabs",
+  tabs: [
+    { label: "General", path: settings_general_path(@team), icon: "cog-6-tooth" },
+    { label: "Team", path: settings_memberships_path(@team), icon: "users" },
+  ],
+  current_path: request.path %>

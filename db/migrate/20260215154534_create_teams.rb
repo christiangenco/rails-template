@@ -3,7 +3,8 @@ class CreateTeams < ActiveRecord::Migration[8.1]
     create_table :teams do |t|
       t.string :name
       t.references :owner, null: true, foreign_key: { to_table: :users }
-      t.integer :kind
+      t.string :kind, default: "personal"
+      t.string :timezone
 
       t.timestamps
     end

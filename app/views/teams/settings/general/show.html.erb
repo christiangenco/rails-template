@@ -1,0 +1,18 @@
+<%= render "teams/settings/header" %>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-2xl">
+  <%= tailwind_form_for @team, url: settings_general_path(@team), method: :patch do |f| %>
+    <%= f.text_field :name, label: "Team Name", required: true %>
+
+    <%= f.select :timezone, 
+      options_for_select(
+        ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.name] },
+        @team.timezone
+      ),
+      { include_blank: "Select timezone", label: "Timezone" } %>
+
+    <div class="mt-6">
+      <%= f.submit "Save Changes", class: "btn-primary" %>
+    </div>
+  <% end %>
+</div>

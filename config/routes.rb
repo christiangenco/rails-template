@@ -9,6 +9,15 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Team-scoped routes (Phase 6)
+  scope "/teams/:team_id", constraints: { team_id: /\d+/ } do
+    namespace :settings, module: "teams/settings" do
+      resource :general, only: [:show, :update], controller: "general"
+      resources :memberships, only: [:index, :update, :destroy]
+    end
+    get "settings", to: redirect { |params, _| "/teams/#{params[:team_id]}/settings/general" }
+  end
+
   # Defines the root path route ("/")
   root "welcome#index"
   

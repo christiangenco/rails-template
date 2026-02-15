@@ -22,6 +22,8 @@ module ApplicationHelper
     "https://www.gravatar.com/avatar/#{hash}?s=#{size}&d=mp"
   end
   
+  alias_method :gravatar_url_for, :gravatar_url
+  
   def current_or_default_team
     # Will be implemented in Phase 6 with authentication
     Current.team || current_user&.default_team

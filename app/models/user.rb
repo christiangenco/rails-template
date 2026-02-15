@@ -29,7 +29,10 @@ class User < ApplicationRecord
   end
 
   def default_team
-    teams.joins(:memberships).where(memberships: { status: :active }).order(:created_at).first
+    teams.joins(:memberships)
+      .where(memberships: { user_id: id, status: :active })
+      .order("memberships.created_at")
+      .first
   end
 
   def display_id

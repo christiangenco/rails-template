@@ -1,0 +1,59 @@
+<%= render "teams/settings/header" %>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+  <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Team Members</h2>
+    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      Manage who has access to this team.
+    </p>
+  </div>
+
+  <div class="divide-y divide-gray-200 dark:divide-gray-700">
+    <% @memberships.each do |membership| %>
+      <div class="p-6 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <img src="<%= gravatar_url_for(membership.user.email, size: 40) %>" 
+               alt="<%= membership.user.display_id %>"
+               class="w-10 h-10 rounded-full">
+          
+          <div>
+            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <%= membership.user.display_id %>
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              <%= membership.user.email %>
+            </div>
+          </div>
+
+          <%= pill membership.role.titleize, 
+            color: membership.owner? ? "blue" : (membership.admin? ? "purple" : "gray") %>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <% unless membership.owner? %>
+            <%= form_with model: membership, 
+              url: settings_membership_path(@team, membership), 
+              method: :patch,
+              class: "inline-block" do |f| %>
+              <%= f.select :role, 
+                options_for_select(
+                  Membership.roles.reject { |k, _| k == "owner" }.map { |k, v| [k.titleize, k] },
+                  membership.role
+                ),
+                {},
+                class: "rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm",
+                onchange: "this.form.requestSubmit()" %>
+            <% end %>
+
+            <%= button_to settings_membership_path(@team, membership),
+              method: :delete,
+              class: "btn-secondary btn-sm",
+              data: { turbo_confirm: "Are you sure you want to remove this member?" } do %>
+              Remove
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

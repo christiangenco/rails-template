@@ -2222,3 +2222,69 @@ All verification checks passed:
 The file-based article system is fully functional, allowing you to add new articles simply by creating HTML files with YAML front matter in `app/views/articles/content/`.
 10:26:56 [0;34m[META][0m Verifying phase 11...
 10:26:59 [0;32m[META][0m ✅ Phase 11 (landing-page-and-articles) — PASSED
+[master 6668c3b] Phase 11: landing-page-and-articles
+ 14 files changed, 679 insertions(+), 1 deletion(-)
+ create mode 100644 app/controllers/articles_controller.rb
+ create mode 100644 app/controllers/home_controller.rb
+ create mode 100644 app/models/article.rb
+ create mode 100644 app/views/articles/content/getting-started.html.erb
+ create mode 100644 app/views/articles/content/welcome.html.erb
+ create mode 100644 app/views/articles/index.html.erb
+ create mode 100644 app/views/articles/index.rss.builder
+ create mode 100644 app/views/articles/show.html.erb
+ create mode 100644 app/views/home/index.html.erb
+
+10:26:59 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+10:26:59 [0;34m[META][0m [1m  PHASE 12: kamal-and-litestream[0m
+10:26:59 [0;34m[META][0m [1m═══════════════════════════════════════════════════[0m
+
+10:26:59 [0;34m[META][0m Attempt 1/3
+10:26:59 [0;34m[META][0m Invoking pi to implement phase 12...
+Perfect! Phase 12 (Kamal & Litestream) has been successfully implemented. Here's what was completed:
+
+## ✅ All Files Created/Modified
+
+### New Files:
+- **Dockerfile** - Multi-stage build with Ruby 3.4.1, jemalloc, libvips, sqlite3
+- **bin/docker-entrypoint** - Executable entrypoint with jemalloc and db:prepare
+- **config/deploy.yml** - Kamal 2 configuration with SSL, registry, Litestream accessory
+- **config/litestream.yml** - Backup configuration for all 4 SQLite databases
+- **.kamal/secrets** - Dynamic secrets sourcing from Rails credentials
+- **.dockerignore** - Build optimization (excludes .git, logs, tmp, etc.)
+
+### Modified Files:
+- **config/environments/production.rb** - Removed redundant `connects_to` calls (already in database.yml)
+- **config/credentials.yml.enc** - Added Litestream S3 credentials placeholders
+- **README.md** - Added comprehensive deployment and restoration documentation
+
+## ✅ Verification Complete
+
+All verification checks passed:
+
+1. ✓ **Docker build succeeds** - Image builds successfully as `myapp:latest`
+2. ✓ **config/deploy.yml** - Has placeholders for SERVER_IP, domain (myapp.com), and registry (localhost:5555)
+3. ✓ **config/litestream.yml** - Configured for all 4 databases (primary, queue, cache, cable) with S3 backup paths
+4. ✓ **.kamal/secrets** - Correctly reads RAILS_MASTER_KEY and Litestream credentials
+5. ✓ **Litestream credentials** - Successfully stored in Rails encrypted credentials
+
+## 🔧 Key Implementation Notes
+
+- Fixed database configuration conflict by removing `connects_to` from production.rb (multi-db config already in database.yml)
+- Added `.ruby-version` to Dockerfile COPY to fix bundle install
+- bin/docker-entrypoint is executable and runs db:prepare on server startup
+- Litestream runs as a Kamal accessory (sidecar container) with continuous replication
+
+## 📝 Next Steps for Deployment
+
+The template is ready to deploy. Users need to:
+
+1. Replace `YOUR_SERVER_IP` in config/deploy.yml
+2. Update `myapp.com` to their actual domain
+3. Update `your-backups-bucket` in config/litestream.yml
+4. Set real S3 credentials: `bin/rails credentials:edit`
+5. Initialize: `kamal setup`
+6. Deploy: `kamal deploy`
+
+All files are complete, no TODOs or placeholders remain in the code itself (only in configuration values that users customize).
+10:32:33 [0;34m[META][0m Verifying phase 12...
+10:32:37 [0;32m[META][0m ✅ Phase 12 (kamal-and-litestream) — PASSED

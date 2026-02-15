@@ -1,0 +1,32 @@
+dbs:
+  # Primary database
+  - path: /storage/production.sqlite3
+    replicas:
+      - type: s3
+        bucket: your-backups-bucket
+        path: myapp/production.sqlite3
+        endpoint: https://nyc3.digitaloceanspaces.com
+
+  # Queue database
+  - path: /storage/production_queue.sqlite3
+    replicas:
+      - type: s3
+        bucket: your-backups-bucket
+        path: myapp/production_queue.sqlite3
+        endpoint: https://nyc3.digitaloceanspaces.com
+
+  # Cache database (optional — can be rebuilt)
+  - path: /storage/production_cache.sqlite3
+    replicas:
+      - type: s3
+        bucket: your-backups-bucket
+        path: myapp/production_cache.sqlite3
+        endpoint: https://nyc3.digitaloceanspaces.com
+
+  # Cable database (optional — ephemeral data)
+  - path: /storage/production_cable.sqlite3
+    replicas:
+      - type: s3
+        bucket: your-backups-bucket
+        path: myapp/production_cable.sqlite3
+        endpoint: https://nyc3.digitaloceanspaces.com

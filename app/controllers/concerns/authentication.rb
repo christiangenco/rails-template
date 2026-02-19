@@ -4,6 +4,7 @@ module Authentication
   included do
     before_action :require_authentication
     helper_method :authenticated?
+    helper_method :email_address_pending_authentication
   end
 
   class_methods do

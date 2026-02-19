@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@source "../../views";
+@source "../../helpers";
+@source "../../javascript";
+@source "../../controllers";
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
 

@@ -12,6 +12,7 @@ module Authentication
     end
 
     def require_unauthenticated_access(**options)
+      skip_before_action :require_authentication, **options
       before_action :redirect_authenticated_user, **options
     end
   end

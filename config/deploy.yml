@@ -31,9 +31,12 @@ volumes:
 # Bridge assets between deploys (avoid 404 on in-flight requests)
 asset_path: /rails/public/assets
 
-# Builder config
+# Builder config — build on the server natively (amd64) to avoid QEMU
+# emulation issues with Tailwind CSS v4's filesystem scanning
 builder:
   arch: amd64
+  remote: ssh://root@YOUR_SERVER_IP
+  local: false
 
 # Litestream sidecar for continuous SQLite backups
 accessories:

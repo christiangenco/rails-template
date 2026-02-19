@@ -20,7 +20,7 @@ gem "solid_cache"
 gem "solid_cable"
 
 # Pagination
-gem "pagy", "~> 9.3"
+gem "pagy", "~> 43.2"
 
 # Rich text
 gem "image_processing", "~> 1.2"

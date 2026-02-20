@@ -17,9 +17,12 @@ class ApplicationController < ActionController::Base
   private
 
   def current_user
-    if session[:impersonated_user_id]
-      @current_user ||= User.find_by(id: session[:impersonated_user_id])
+    return @current_user if defined?(@current_user)
+
+    @current_user = if session[:impersonated_user_id]
+      User.find_by(id: session[:impersonated_user_id])
     else
+      resume_session unless Current.session
       Current.user
     end
   end

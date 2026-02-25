@@ -1,0 +1,13 @@
+#!/bin/sh
+# Pre-build hook: build Tailwind CSS on the host machine before Docker build.
+#
+# Tailwind CSS v4's Rust-based oxide filesystem scanner produces incomplete
+# output when run inside Docker's overlayfs during build. Building on the
+# host avoids this issue. The Dockerfile skips the Tailwind build step
+# (SKIP_TAILWIND_BUILD=1) and uses this pre-built CSS instead.
+
+set -e
+
+echo "Pre-building Tailwind CSS on host..."
+bin/rails tailwindcss:build
+echo "Tailwind CSS built successfully."

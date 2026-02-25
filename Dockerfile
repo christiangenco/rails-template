@@ -34,8 +34,9 @@ COPY . .
 
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
-# Precompile assets
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# Precompile assets — Tailwind CSS is pre-built on the host via
+# .kamal/hooks/pre-build to work around Tailwind v4's overlayfs scanner bug
+RUN SECRET_KEY_BASE_DUMMY=1 SKIP_TAILWIND_BUILD=1 ./bin/rails assets:precompile
 
 # Final stage
 FROM base

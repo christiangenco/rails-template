@@ -1,5 +1,5 @@
 service: myapp
-image: myapp
+image: YOUR_GITHUB_USERNAME/myapp
 
 servers:
   web:
@@ -11,10 +11,12 @@ proxy:
   ssl: true
   host: myapp.com
 
-# Container registry — local registry for self-hosted
-# For Docker Hub, use: server: docker.io
+# Container registry — GitHub Container Registry
 registry:
-  server: localhost:5555
+  server: ghcr.io
+  username: YOUR_GITHUB_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
 
 env:
   secret:
@@ -31,12 +33,12 @@ volumes:
 # Bridge assets between deploys (avoid 404 on in-flight requests)
 asset_path: /rails/public/assets
 
-# Builder config — build on the server natively (amd64) to avoid QEMU
-# emulation issues with Tailwind CSS v4's filesystem scanning
+# Builder config — build locally, push to GHCR
+# context: . ensures Docker uses the working directory (not a git clone)
+# so the pre-built Tailwind CSS from .kamal/hooks/pre-build is included.
 builder:
   arch: amd64
-  remote: ssh://root@YOUR_SERVER_IP
-  local: false
+  context: .
 
 # Litestream sidecar for continuous SQLite backups
 accessories:

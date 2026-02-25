@@ -49,6 +49,17 @@ This app is a Ruby on Rails 8 application template using SQLite, Alpine.js, Tail
 - `time_tag_ago(datetime)` — "2 hours ago" with full date tooltip
 - `tailwind_form_for(@model)` — form builder with Tailwind styling
 
+## Deployment
+
+- **Registry**: GHCR (ghcr.io) — token stored in Rails credentials at `ghcr.token`
+- **Builder**: Local build with `context: .` (not a git clone)
+- **Tailwind v4 workaround**: Tailwind v4's Rust-based oxide scanner produces incomplete CSS inside Docker's overlayfs. Three-part fix:
+  1. `.kamal/hooks/pre-build` builds Tailwind on the host before Docker build
+  2. `builder.context: .` in `deploy.yml` preserves the pre-built CSS in the Docker context
+  3. `SKIP_TAILWIND_BUILD=1` in the Dockerfile + `lib/tasks/skip_tailwind.rake` skips the Tailwind step during `assets:precompile`
+- **GitHub Secrets** (for CI deploys): `SSH_PRIVATE_KEY`, `RAILS_MASTER_KEY`
+- **Backups**: Litestream sidecar for continuous SQLite replication to S3
+
 ## Development Server
 
 ```bash

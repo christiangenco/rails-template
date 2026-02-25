@@ -49,6 +49,12 @@ This app is a Ruby on Rails 8 application template using SQLite, Alpine.js, Tail
 - `time_tag_ago(datetime)` — "2 hours ago" with full date tooltip
 - `tailwind_form_for(@model)` — form builder with Tailwind styling
 
+## New Project Setup
+
+Run `bin/setup-new-project` after cloning the template. It prompts for app name, domain, and server IP, then:
+- Regenerates `config/master.key` (carries forward shared secrets like GHCR token and Litestream keys)
+- Replaces all placeholders in `deploy.yml` and `litestream.yml`
+
 ## Deployment
 
 - **Registry**: GHCR (ghcr.io) — token stored in Rails credentials at `ghcr.token`

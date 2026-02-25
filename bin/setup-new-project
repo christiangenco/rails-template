@@ -1,0 +1,148 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Setup script for creating a new project from the rails-template.
+# Regenerates master.key, carries forward shared secrets, and replaces
+# all template placeholders with project-specific values.
+#
+# Usage: bin/setup-new-project
+
+require "yaml"
+require "json"
+require "fileutils"
+
+GITHUB_USERNAME = "christiangenco"
+LITESTREAM_BUCKET = "genco-backups"
+LITESTREAM_ENDPOINT = "https://nyc3.digitaloceanspaces.com"
+
+def prompt(label, default: nil)
+  print default ? "#{label} [#{default}]: " : "#{label}: "
+  input = $stdin.gets.chomp
+  value = input.empty? ? default : input
+  abort "#{label} is required." if value.nil? || value.empty?
+  value
+end
+
+def run(cmd)
+  output = `#{cmd} 2>&1`
+  abort "Command failed: #{cmd}\n#{output}" unless $?.success?
+  output.strip
+end
+
+def replace_in_file(path, replacements)
+  content = File.read(path)
+  replacements.each do |find, replace|
+    content.gsub!(find, replace)
+  end
+  File.write(path, content)
+end
+
+puts "=" * 60
+puts "  New Project Setup"
+puts "=" * 60
+puts
+
+app_name = prompt("App name (lowercase, e.g. widgetco)")
+domain = prompt("Domain", default: "#{app_name}.com")
+server_ip = prompt("Server IP address")
+
+puts
+puts "Configuration:"
+puts "  App name:    #{app_name}"
+puts "  Domain:      #{domain}"
+puts "  Server IP:   #{server_ip}"
+puts "  GHCR image:  ghcr.io/#{GITHUB_USERNAME}/#{app_name}"
+puts "  Backups:     s3://#{LITESTREAM_BUCKET}/#{app_name}/production.sqlite3"
+puts
+print "Proceed? [Y/n]: "
+confirm = $stdin.gets.chomp
+abort "Aborted." if confirm.downcase == "n"
+
+puts
+puts "Step 1: Reading shared secrets from current credentials..."
+secrets_json = run('bin/rails runner "
+  creds = Rails.application.credentials
+  secrets = {
+    ghcr_token: creds.dig(:ghcr, :token),
+    litestream_access_key_id: creds.dig(:litestream, :access_key_id),
+    litestream_secret_access_key: creds.dig(:litestream, :secret_access_key)
+  }
+  puts secrets.to_json
+"')
+secrets = JSON.parse(secrets_json)
+
+missing = secrets.select { |_k, v| v.nil? || v.empty? }
+unless missing.empty?
+  puts "WARNING: Missing credentials: #{missing.keys.join(', ')}"
+  puts "You'll need to add these manually with: bin/rails credentials:edit"
+end
+
+puts "Step 2: Regenerating master key and credentials..."
+FileUtils.rm_f("config/master.key")
+FileUtils.rm_f("config/credentials.yml.enc")
+
+# Build credentials YAML with shared secrets
+creds_yaml = {
+  "ghcr" => { "token" => secrets["ghcr_token"] },
+  "litestream" => {
+    "access_key_id" => secrets["litestream_access_key_id"],
+    "secret_access_key" => secrets["litestream_secret_access_key"]
+  }
+}.to_yaml
+
+# Write credentials using rails credentials:edit via EDITOR trick
+# We write the YAML to a temp file and use a script that copies it as the EDITOR
+tmpfile = File.expand_path("tmp/new_credentials.yml")
+File.write(tmpfile, creds_yaml)
+run("EDITOR='cp #{tmpfile}' bin/rails credentials:edit")
+FileUtils.rm_f(tmpfile)
+
+new_master_key = File.read("config/master.key").strip
+puts "  New master key: #{new_master_key[0..3]}#{'*' * (new_master_key.length - 4)}"
+
+puts "Step 3: Updating config/deploy.yml..."
+replace_in_file("config/deploy.yml", {
+  "service: myapp" => "service: #{app_name}",
+  "image: YOUR_GITHUB_USERNAME/myapp" => "image: #{GITHUB_USERNAME}/#{app_name}",
+  "YOUR_SERVER_IP" => server_ip,
+  "YOUR_GITHUB_USERNAME" => GITHUB_USERNAME,
+  "myapp.com" => domain,
+  "myapp_storage" => "#{app_name}_storage"
+})
+
+puts "Step 4: Updating config/litestream.yml..."
+replace_in_file("config/litestream.yml", {
+  "your-backups-bucket" => LITESTREAM_BUCKET,
+  "myapp/production.sqlite3" => "#{app_name}/production.sqlite3"
+})
+
+puts "Step 5: Updating Procfile and other references..."
+# Update any remaining myapp references
+%w[
+  config/deploy.yml
+].each do |file|
+  next unless File.exist?(file)
+  replace_in_file(file, { "myapp" => app_name })
+end
+
+puts
+puts "=" * 60
+puts "  Setup complete!"
+puts "=" * 60
+puts
+puts "Next steps:"
+puts
+puts "  1. Add GitHub repo secrets (for CI deploys):"
+puts "     - RAILS_MASTER_KEY=#{new_master_key}"
+puts "     - SSH_PRIVATE_KEY=(your deploy key)"
+puts
+puts "  2. Log into GHCR on the server:"
+puts "     ssh root@#{server_ip} \"echo 'GHCR_TOKEN' | docker login ghcr.io -u #{GITHUB_USERNAME} --password-stdin\""
+puts "     (Get the token from: bin/rails credentials:show)"
+puts
+puts "  3. Point DNS for #{domain} to #{server_ip}"
+puts
+puts "  4. Deploy:"
+puts "     bin/kamal setup    # First deploy"
+puts "     bin/kamal deploy   # Subsequent deploys"
+puts

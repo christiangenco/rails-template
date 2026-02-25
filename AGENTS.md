@@ -51,9 +51,11 @@ This app is a Ruby on Rails 8 application template using SQLite, Alpine.js, Tail
 
 ## New Project Setup
 
-Run `bin/setup-new-project` after cloning the template. It prompts for app name, domain, and server IP, then:
-- Regenerates `config/master.key` (carries forward shared secrets like GHCR token and Litestream keys)
-- Replaces all placeholders in `deploy.yml` and `litestream.yml`
+```bash
+bin/setup-new-project --name myapp --domain myapp.com --server-ip 123.45.67.89
+```
+
+Regenerates `config/master.key` (carrying forward shared secrets like GHCR token and Litestream keys) and replaces all placeholders in `deploy.yml` and `litestream.yml`. Run with `--help` for all options.
 
 ## Deployment
 

@@ -153,108 +153,62 @@ config.action_mailer.default_url_options = { host: "myapp.com" }
 
 ## Deployment
 
-This app deploys to a single server with [Kamal 2](https://kamal-deploy.org/). SQLite databases live on a Docker volume and are continuously backed up to S3 via [Litestream](https://litestream.io/).
+This app deploys to a single server with [Kamal 2](https://kamal-deploy.org/). Docker images push to GHCR (GitHub Container Registry). SQLite databases live on a Docker volume and are continuously backed up to S3 via [Litestream](https://litestream.io/).
 
-### 1. Provision a server
+### Quick setup
 
-Any Linux server with Docker works. Ubuntu 22.04+ on a $6/mo DigitalOcean droplet is fine.
-
-SSH in and ensure Docker is installed:
+After cloning the template, run the setup script to configure everything:
 
 ```bash
-curl -fsSL https://get.docker.com | sh
+bin/setup-new-project --name myapp --domain myapp.com --server-ip 123.45.67.89
 ```
 
-### 2. Set up S3-compatible storage for backups
+This will:
+- Regenerate `config/master.key` (carrying forward shared secrets like GHCR token and Litestream keys)
+- Replace all placeholders in `config/deploy.yml` and `config/litestream.yml`
+- Print next steps (GitHub secrets, server GHCR login, DNS)
 
-Create a bucket on any S3-compatible service (DigitalOcean Spaces, AWS S3, Backblaze B2, etc.) and generate access keys.
+Run `bin/setup-new-project --help` for all options.
 
-### 3. Configure credentials
+### Prerequisites
+
+1. **Server**: Any Linux server with Docker (`curl -fsSL https://get.docker.com | sh`)
+2. **GHCR token**: A GitHub PAT (classic) with `repo` + `write:packages` scopes, stored in Rails credentials at `ghcr.token`
+3. **S3 bucket**: For Litestream backups (DigitalOcean Spaces, AWS S3, etc.)
+4. **DNS**: Point your domain to the server IP
+
+### Manual configuration
+
+If you prefer to configure manually instead of using the setup script:
+
+1. Edit `config/deploy.yml` — set service name, server IP, domain, and GHCR image
+2. Edit `config/litestream.yml` — set S3 bucket and app-specific path
+3. Add credentials: `bin/rails credentials:edit`
+   ```yaml
+   ghcr:
+     token: ghp_your_github_pat
+   litestream:
+     access_key_id: YOUR_KEY
+     secret_access_key: YOUR_SECRET
+   ```
+4. Log into GHCR on the server:
+   ```bash
+   ssh root@SERVER "echo 'TOKEN' | docker login ghcr.io -u USERNAME --password-stdin"
+   ```
+
+### Deploy
 
 ```bash
-bin/rails credentials:edit
+bin/kamal setup    # First deploy
+bin/kamal deploy   # Subsequent deploys
 ```
 
-```yaml
-litestream:
-  access_key_id: DO00XXXXXXXXXXXXXXXX
-  secret_access_key: your-secret-key-here
+### Tailwind v4 + Docker workaround
 
-# Add SMTP credentials too (see Configuration section above)
-```
-
-### 4. Configure deploy.yml
-
-Edit `config/deploy.yml`:
-
-```yaml
-service: myapp                    # Your app name
-image: myapp                      # Docker image name
-
-servers:
-  web:
-    - 123.45.67.89                # Your server IP
-
-proxy:
-  ssl: true
-  host: myapp.com                 # Your domain (DNS must point to server)
-
-registry:
-  server: docker.io               # Or ghcr.io, localhost:5555, etc.
-  username: yourusername
-  password:
-    - KAMAL_REGISTRY_PASSWORD
-```
-
-Update the Litestream accessory host too:
-
-```yaml
-accessories:
-  litestream:
-    host: 123.45.67.89            # Same server IP
-```
-
-### 5. Configure litestream.yml
-
-Edit `config/litestream.yml` — replace the bucket and endpoint:
-
-```yaml
-dbs:
-  - path: /storage/production.sqlite3
-    replicas:
-      - type: s3
-        bucket: my-backups-bucket
-        path: myapp/production.sqlite3
-        endpoint: https://nyc3.digitaloceanspaces.com  # Your S3 endpoint
-  # ... same for queue, cache, cable databases
-```
-
-For AWS S3, remove `endpoint` and add `region: us-east-1`.
-
-### 6. Configure .kamal/secrets
-
-Edit `.kamal/secrets` if you need to add registry credentials:
-
-```bash
-RAILS_MASTER_KEY=$(cat config/master.key)
-KAMAL_REGISTRY_PASSWORD=your-registry-token
-LITESTREAM_ACCESS_KEY_ID=$(bin/rails r "puts Rails.application.credentials.dig(:litestream, :access_key_id)")
-LITESTREAM_SECRET_ACCESS_KEY=$(bin/rails r "puts Rails.application.credentials.dig(:litestream, :secret_access_key)")
-```
-
-### 7. Deploy
-
-First time:
-
-```bash
-kamal setup
-```
-
-Subsequent deploys:
-
-```bash
-kamal deploy
-```
+Tailwind CSS v4's Rust-based filesystem scanner produces incomplete CSS inside Docker's overlayfs. This is handled automatically via three pieces:
+1. `.kamal/hooks/pre-build` — builds Tailwind on the host before Docker build
+2. `builder.context: .` in `deploy.yml` — preserves pre-built CSS in Docker context
+3. `SKIP_TAILWIND_BUILD=1` in `Dockerfile` + `lib/tasks/skip_tailwind.rake` — skips Tailwind during Docker's `assets:precompile`
 
 ### Useful Kamal commands
 

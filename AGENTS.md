@@ -52,10 +52,37 @@ This app is a Ruby on Rails 8 application template using SQLite, Alpine.js, Tail
 ## New Project Setup
 
 ```bash
-bin/setup-new-project --name myapp --domain myapp.com --server-ip 123.45.67.89
+bin/setup-new-project --name myapp --domain myapp.com --server-ip 123.45.67.89 \
+  --smtp-user myapp@genco.email --smtp-password "YOUR_SMTP_PASSWORD" \
+  --mail-from "My App <myapp@genco.email>"
 ```
 
-Regenerates `config/master.key` (carrying forward shared secrets like GHCR token and Litestream keys) and replaces all placeholders in `deploy.yml` and `litestream.yml`. Run with `--help` for all options.
+Regenerates `config/master.key`, generates `secret_key_base` and `active_record_encryption` keys, carries forward shared secrets (GHCR token, Litestream keys), configures Mailgun SMTP, and replaces all placeholders. Run with `--help` for all options.
+
+### Email Setup (Mailgun via genco.email)
+
+All apps send email through Mailgun using the `genco.email` domain. For each new app:
+
+1. **Create SMTP credentials on Mailgun** for `myapp@genco.email`:
+   ```bash
+   curl -s --user "api:YOUR_MAILGUN_API_KEY" \
+     "https://api.mailgun.net/v3/domains/genco.email/credentials" \
+     -d "login=myapp@genco.email" \
+     -d "password=SomeSecurePassword123!"
+   ```
+   The Mailgun API key can be retrieved from the running `mailgun-mailboxes` app:
+   ```bash
+   ssh apps "docker exec \$(docker ps -q --filter name=mailgun-mailboxes-web) bin/rails runner \"puts User.first.mailgun_api_key\""
+   ```
+
+2. **Pass the SMTP credentials** to `bin/setup-new-project` via `--smtp-user` and `--smtp-password`.
+
+3. If you forgot to pass them during setup, manually:
+   - Add `mailgun.smtp_password` to Rails credentials (`bin/rails credentials:edit`)
+   - Configure `config/environments/production.rb` with `smtp.mailgun.org`, port 587, and `user_name: "myapp@genco.email"`
+   - Update `app/mailers/application_mailer.rb` default from address
+
+**⚠️ Common gotcha:** The SMTP `user_name` must match the Mailgun credential you created — NOT `postmaster@genco.email`. If login emails fail with `Net::SMTPAuthenticationError (535 Authentication failed)`, this is almost certainly the issue.
 
 ## Deployment
 

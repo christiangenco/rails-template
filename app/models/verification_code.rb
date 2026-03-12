@@ -1,4 +1,4 @@
-class MagicLink < ApplicationRecord
+class VerificationCode < ApplicationRecord
   CODE_LENGTH = 6
   EXPIRATION_TIME = 15.minutes
 

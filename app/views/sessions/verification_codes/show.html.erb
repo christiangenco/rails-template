@@ -32,7 +32,7 @@
       </p>
     </div>
 
-    <%= form_with url: session_magic_link_path, method: :post, 
+    <%= form_with url: session_verification_code_path, method: :post, 
       class: "mt-8 space-y-6" do |f| %>
       
       <div>
@@ -63,13 +63,13 @@
       </p>
     </div>
 
-    <% if Rails.env.development? && flash[:magic_link_code] %>
+    <% if Rails.env.development? && flash[:verification_code] %>
       <div class="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-600 rounded-md">
         <p class="text-sm text-yellow-800 dark:text-yellow-200 mb-2">Development mode - code auto-fill:</p>
         <button type="button" 
-          @click="autofill('<%= flash[:magic_link_code] %>')"
+          @click="autofill('<%= flash[:verification_code] %>')"
           class="w-full px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 font-mono text-lg">
-          <%= flash[:magic_link_code] %>
+          <%= flash[:verification_code] %>
         </button>
       </div>
     <% end %>

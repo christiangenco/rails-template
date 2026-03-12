@@ -47,7 +47,7 @@ Rails.application.routes.draw do
   # Authentication (Phase 5)
   resource :session, only: [:new, :create, :destroy] do
     scope module: :sessions do
-      resource :magic_link, only: [:show, :create]
+      resource :verification_code, only: [:show, :create]
     end
   end
 

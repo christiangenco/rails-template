@@ -16,7 +16,7 @@ This app is a Ruby on Rails 8 application template using SQLite, Alpine.js, Tail
 
 - **Database**: SQLite for everything (primary, queue, cache, cable)
 - **Frontend**: Alpine.js + Turbo (no Stimulus), Tailwind CSS v4
-- **Auth**: Passwordless email codes (MagicLink model)
+- **Auth**: Passwordless email codes (VerificationCode model)
 - **Multi-tenancy**: Team-based. All app records belong to a team.
 - **Jobs**: Solid Queue (SQLite-backed)
 - **Cache**: Solid Cache (SQLite-backed)

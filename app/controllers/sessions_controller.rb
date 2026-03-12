@@ -10,15 +10,15 @@ class SessionsController < ApplicationController
   def create
     if user = User.find_by(email: email_address)
       if user.active_for_passwordless_authentication?
-        redirect_to_session_magic_link user.send_magic_link
+        redirect_to_verification_code user.send_verification_code
       else
         redirect_to new_session_path, alert: user.inactive_message
       end
     elsif signups_enabled?
       user = User.create!(email: email_address)
-      redirect_to_session_magic_link user.send_magic_link(purpose: :sign_up)
+      redirect_to_verification_code user.send_verification_code(purpose: :sign_up)
     else
-      redirect_to_fake_session_magic_link(email_address)
+      redirect_to_fake_verification_code(email_address)
     end
   end
 

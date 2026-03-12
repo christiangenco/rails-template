@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_15_161605) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_12_033700) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.text "body"
     t.datetime "created_at", null: false
@@ -47,17 +47,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_161605) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
-  end
-
-  create_table "magic_links", force: :cascade do |t|
-    t.string "code"
-    t.datetime "created_at", null: false
-    t.datetime "expires_at"
-    t.integer "purpose"
-    t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
-    t.index ["code"], name: "index_magic_links_on_code", unique: true
-    t.index ["user_id"], name: "index_magic_links_on_user_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -117,13 +106,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_161605) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  create_table "verification_codes", force: :cascade do |t|
+    t.string "code"
+    t.datetime "created_at", null: false
+    t.datetime "expires_at"
+    t.integer "purpose"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["code"], name: "index_verification_codes_on_code", unique: true
+    t.index ["user_id"], name: "index_verification_codes_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "magic_links", "users"
   add_foreign_key "memberships", "teams"
   add_foreign_key "memberships", "users"
   add_foreign_key "posts", "teams"
   add_foreign_key "posts", "users", column: "created_by_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "teams", "users", column: "owner_id"
+  add_foreign_key "verification_codes", "users"
 end

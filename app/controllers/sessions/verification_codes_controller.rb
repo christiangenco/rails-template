@@ -1,4 +1,4 @@
-class Sessions::MagicLinksController < ApplicationController
+class Sessions::VerificationCodesController < ApplicationController
   require_unauthenticated_access
   rate_limit to: 10, within: 15.minutes, only: :create, with: :rate_limit_exceeded
   before_action :ensure_that_email_address_pending_authentication_exists
@@ -9,10 +9,10 @@ class Sessions::MagicLinksController < ApplicationController
   end
 
   def create
-    if magic_link = MagicLink.consume(code)
-      authenticate(magic_link)
+    if verification_code = VerificationCode.consume(code)
+      authenticate(verification_code)
     else
-      redirect_to session_magic_link_path, flash: { shake: true }
+      redirect_to session_verification_code_path, flash: { shake: true }
     end
   end
 
@@ -28,10 +28,10 @@ class Sessions::MagicLinksController < ApplicationController
     params.expect(:code)
   end
 
-  def authenticate(magic_link)
-    if ActiveSupport::SecurityUtils.secure_compare(email_address_pending_authentication || "", magic_link.user.email)
+  def authenticate(verification_code)
+    if ActiveSupport::SecurityUtils.secure_compare(email_address_pending_authentication || "", verification_code.user.email)
       clear_pending_authentication_token
-      start_new_session_for magic_link.user
+      start_new_session_for verification_code.user
       redirect_to after_authentication_url
     else
       clear_pending_authentication_token
@@ -40,6 +40,6 @@ class Sessions::MagicLinksController < ApplicationController
   end
 
   def rate_limit_exceeded
-    redirect_to session_magic_link_path, alert: "Too many attempts. Please try again in 15 minutes."
+    redirect_to session_verification_code_path, alert: "Too many attempts. Please try again in 15 minutes."
   end
 end

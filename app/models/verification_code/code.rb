@@ -1,4 +1,4 @@
-module MagicLink::Code
+module VerificationCode::Code
   # Uppercase letters and digits, excluding confusable characters (O, I, L)
   ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789".chars.freeze
   CODE_SUBSTITUTIONS = { "O" => "0", "I" => "1", "L" => "1" }.freeze

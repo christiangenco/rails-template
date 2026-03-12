@@ -85,20 +85,20 @@ module Authentication
     end
   end
 
-  def redirect_to_session_magic_link(magic_link)
-    set_pending_authentication_token(magic_link.user.email)
+  def redirect_to_verification_code(verification_code)
+    set_pending_authentication_token(verification_code.user.email)
     
     if Rails.env.development?
-      flash[:magic_link_code] = magic_link.code
-      response.set_header("X-Magic-Link-Code", magic_link.code)
+      flash[:verification_code] = verification_code.code
+      response.set_header("X-Verification-Code", verification_code.code)
     end
     
-    redirect_to session_magic_link_path
+    redirect_to session_verification_code_path
   end
 
-  def redirect_to_fake_session_magic_link(email)
+  def redirect_to_fake_verification_code(email)
     set_pending_authentication_token(email)
-    redirect_to session_magic_link_path
+    redirect_to session_verification_code_path
   end
 
   def set_pending_authentication_token(email)

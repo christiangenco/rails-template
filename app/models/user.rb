@@ -2,7 +2,7 @@ class User < ApplicationRecord
   include User::Deactivatable
   include User::EmailAddressChangeable
 
-  has_many :magic_links, dependent: :destroy
+  has_many :verification_codes, dependent: :destroy
   has_many :sessions, dependent: :destroy
   has_many :memberships, dependent: :destroy
   has_many :teams, through: :memberships
@@ -40,9 +40,9 @@ class User < ApplicationRecord
     name.present? ? name : email
   end
 
-  def send_magic_link(purpose: :sign_in)
-    magic_links.create!(purpose: purpose).tap do |ml|
-      MagicLinkMailer.sign_in_instructions(ml).deliver_later
+  def send_verification_code(purpose: :sign_in)
+    verification_codes.create!(purpose: purpose).tap do |vc|
+      VerificationCodeMailer.verification_email(vc).deliver_later
     end
   end
 

@@ -15,14 +15,12 @@ module ApplicationHelper
     form_with(**options, &block)
   end
   
-  def gravatar_url(email, size: 80)
+  def avatar_url(email, size: 80)
     return nil if email.blank?
-    
-    hash = Digest::MD5.hexdigest(email.downcase.strip)
-    "https://www.gravatar.com/avatar/#{hash}?s=#{size}&d=mp"
+    "https://avatars.gxb.vc/avatar/#{CGI.escape(email.downcase.strip)}?s=#{size}"
   end
-  
-  alias_method :gravatar_url_for, :gravatar_url
+  alias_method :gravatar_url, :avatar_url
+  alias_method :gravatar_url_for, :avatar_url
   
   def current_or_default_team
     # Will be implemented in Phase 6 with authentication

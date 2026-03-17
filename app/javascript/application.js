@@ -18,5 +18,8 @@ window.showModal = showModal
 // Override Turbo's confirm with our Alpine modal
 import "utils/turbo_confirm"
 
+// Auto-resize all textareas
+import "utils/auto_resize_textareas"
+
 import "trix"
 import "@rails/actiontext"

@@ -7,6 +7,8 @@ class ApplicationController < ActionController::Base
 
   include Pagy::Backend
   include Authentication
+  include Trackable
+  include AbTestable
 
   helper_method :current_user, :true_user, :admin_impersonating?
 

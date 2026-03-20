@@ -14,7 +14,7 @@ class AnalyticsMiddleware
 
     unless skip_tracking?(request)
       user_id = env["analytics.user_id"] # set by Trackable concern
-      session_id = request.session.id&.to_s
+      session_id = request.session.id&.to_s rescue nil
 
       AnalyticsClient.track(
         event_type: "pageview",

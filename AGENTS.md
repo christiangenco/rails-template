@@ -97,6 +97,29 @@ All apps send email through Mailgun using the `genco.email` domain. For each new
 
 ## Development Server
 
+Each project has a unique port (stored in `.dev-port` and registered in `~/projects/.ports`). The server binds to `0.0.0.0` so it's accessible from other devices on the local network.
+
+**Conventions:**
+- **Port**: Read from `.dev-port` file in project root (or `~/projects/.ports`)
+- **tmux session name**: `{project}-dev` (e.g., `book-dev`, `chat-dev`)
+- **Local URL**: `http://{project}.localhost:{port}` (e.g., `http://book.localhost:3105`)
+- **Binding**: `0.0.0.0` (set in `config/puma.rb`, accessible from phone/other devices)
+
+**To start/open a project:**
 ```bash
-bin/dev  # Starts web server, Tailwind watcher, and job worker
+dev-server book            # Start tmux session + open browser
+dev-server book --start-only   # Just start the server in tmux
+dev-server book --open-only    # Just open the URL in browser
+```
+
+**Manual start:**
+```bash
+tmux new-session -d -s book-dev -c ~/projects/book "PORT=3105 bin/dev"
+open http://book.localhost:3105
+```
+
+**When setting up a new project**, assign the next available port in `~/projects/.ports` and create a `.dev-port` file:
+```bash
+echo "myapp:3121" >> ~/projects/.ports
+echo "3121" > ~/projects/myapp/.dev-port
 ```

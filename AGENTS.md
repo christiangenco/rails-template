@@ -84,6 +84,53 @@ All apps send email through Mailgun using the `genco.email` domain. For each new
 
 **⚠️ Common gotcha:** The SMTP `user_name` must match the Mailgun credential you created — NOT `postmaster@genco.email`. If login emails fail with `Net::SMTPAuthenticationError (535 Authentication failed)`, this is almost certainly the issue.
 
+## GXB Chat Widget Integration
+
+GXB apps that embed the chat.gxb.vc widget need to provision `ProjectMembership` records on chat.gxb.vc at login time, or users will see "Access Denied" in the sidebar. See digi and trigate for working examples.
+
+### Setup checklist
+
+1. **Register a Project on chat.gxb.vc** with a matching `api_key` (store as `chat_api_key` or `chat_api.key` in the host app's Rails credentials).
+2. **Add the widget script** to the layout:
+   ```erb
+   <script src="https://chat.gxb.vc/widget.js" data-project="myapp"></script>
+   ```
+3. **Add `ChatMembershipProvisioner` concern** — calls `POST https://chat.gxb.vc/api/memberships` with the user's `auth_uid` and `email`:
+   ```ruby
+   # app/controllers/concerns/chat_membership_provisioner.rb
+   module ChatMembershipProvisioner
+     extend ActiveSupport::Concern
+
+     private
+
+     def provision_chat_membership(user)
+       api_key = Rails.application.credentials.chat_api_key # or dig(:chat_api, :key)
+       return unless api_key.present?
+
+       uri = URI("https://chat.gxb.vc/api/memberships")
+       req = Net::HTTP::Post.new(uri)
+       req["X-Api-Key"] = api_key
+       req["Content-Type"] = "application/json"
+       req.body = { auth_uid: user.auth_uid, email: user.email }.to_json
+
+       Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, open_timeout: 3, read_timeout: 3) do |http|
+         http.request(req)
+       end
+     rescue StandardError => e
+       Rails.logger.warn "Failed to provision chat membership for #{user.email}: #{e.message}"
+     end
+   end
+   ```
+4. **Call `provision_chat_membership(user)`** in `AuthCallbacksController#create` right after `start_new_session_for(user)`.
+5. **Expose chat API endpoints** if the chat server needs to query back into the host app's database:
+   - `app/controllers/concerns/chat_api_authenticatable.rb` — validates `Authorization: Bearer <api_key>` + `X-Auth-UID`/`X-Auth-Email` headers, with email fallback + `auth_uid` backfill for pre-SSO users.
+   - `POST /chat_api/query` — execute read-only SQL, return paginated results.
+   - `POST /chat_api/execute_tool` — execute named tools (describe_table, column_stats, etc.).
+
+### How it works
+
+The chat.gxb.vc memberships API (`POST /api/memberships`) accepts `auth_uid` and `email`. It finds or creates a User stub on chat.gxb.vc and creates a `ProjectMembership`. The call is fire-and-forget with a 3-second timeout — if it fails, users can still use the host app; they just won't have chat access until their next login.
+
 ## Deployment
 
 - **Registry**: GHCR (ghcr.io) — token stored in Rails credentials at `ghcr.token`

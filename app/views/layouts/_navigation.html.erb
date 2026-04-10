@@ -21,7 +21,7 @@
 
         <%# Desktop nav links (logged in only) %>
         <% if logged_in %>
-          <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
+          <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
             <%= link_to posts_path(team_id: current_or_default_team.id), class: "inline-flex items-center gap-x-2 px-3 py-2 text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400" do %>
               <%= icon "document-text", class: "size-5 text-gray-500" %>
               Posts

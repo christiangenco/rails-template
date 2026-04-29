@@ -24,6 +24,8 @@ require "yaml"
 require "json"
 require "fileutils"
 require "optparse"
+require "securerandom"
+require "securerandom"
 
 options = {
   github_user: "christiangenco",
@@ -212,10 +214,28 @@ end
 ruby_version = File.read(".ruby-version").strip
 dockerfile = "Dockerfile"
 if File.exist?(dockerfile)
-  content = File.read(dockerfile)
+  content = File.read(dockerfile, encoding: "UTF-8")
   content.gsub!(/ARG RUBY_VERSION=[\d.]+/, "ARG RUBY_VERSION=#{ruby_version}")
   File.write(dockerfile, content)
   puts "Synced Dockerfile Ruby version to #{ruby_version}"
+end
+
+# Step 7: Rename Rails module from RailsTemplate to the app's class name
+class_name = app_name.split(/[_-]/).map(&:capitalize).join
+app_rb = "config/application.rb"
+if File.exist?(app_rb) && File.read(app_rb, encoding: "UTF-8").include?("module RailsTemplate")
+  replace_in_file(app_rb, { "module RailsTemplate" => "module #{class_name}" })
+  puts "Renamed Rails module to #{class_name} in #{app_rb}"
+end
+
+# Step 8: Update PWA manifest with app name
+manifest = "app/views/pwa/manifest.json.erb"
+if File.exist?(manifest)
+  replace_in_file(manifest, {
+    '"name": "RailsTemplate"' => %("name": "#{class_name}"),
+    '"description": "RailsTemplate."' => %("description": "#{class_name}.")
+  })
+  puts "Updated PWA manifest with app name #{class_name}"
 end
 
 puts

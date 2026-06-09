@@ -17,6 +17,8 @@ window.showModal = showModal
 
 // Override Turbo's confirm with our Alpine modal
 import "utils/turbo_confirm"
+// Keep Alpine x-show/x-cloak state from breaking during Turbo morph refreshes
+import "utils/preserve_alpine_through_morph"
 
 // Auto-resize all textareas
 import "utils/auto_resize_textareas"

@@ -8,6 +8,7 @@ window.Alpine = Alpine
 
 // Alpine plugins & components
 import "alpine/form_dirty_plugin"
+import "alpine/column_filter"
 
 Alpine.start()
 

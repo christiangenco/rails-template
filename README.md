@@ -13,6 +13,7 @@ A batteries-included Rails 8 starter template. SQLite for everything, passwordle
 - **File uploads** — Active Storage with image variants (libvips)
 - **Background jobs** — Solid Queue, Solid Cache, Solid Cable (all SQLite)
 - **UI component library** — `btn`, `copy_btn`, `pill`, headings, `time_tag_ago`, TailwindFormBuilder, Pagy pagination
+- **Airtable-style filterable columns** — click any table header to sort and filter (text / enum / number / date) via the `Filterable` concern
 - **Modal system** — Alpine.js store-driven, replaces Turbo's `confirm()`
 - **Landing page** — full marketing homepage with hero, features, testimonials, FAQ
 - **Article system** — file-based static articles with YAML front matter, Tailwind Typography, RSS feed
@@ -314,6 +315,77 @@ bin/importmap pin <package-name>
 ```
 
 Then import in `app/javascript/application.js`.
+
+### Airtable-style filterable table columns
+
+Clicking a table header opens a dropdown with sort controls and a type-specific
+filter (text search, enum checkboxes, number range, or date range). Filter state
+lives entirely in the URL (`?f[col][op]=value&sort=col&dir=desc`), so it survives
+reloads, is shareable, and plays nicely with Pagy.
+
+**1. Declare filterable columns on the model** with `include Filterable`:
+
+```ruby
+class Product < ApplicationRecord
+  include Filterable
+
+  filterable :name,     type: :text,   label: "Name"
+  filterable :category, type: :enum,   label: "Category"
+  filterable :price,    type: :number, label: "Price"
+  filterable :due_on,   type: :date,   label: "Due"
+end
+```
+
+Operators by type:
+
+| Type     | Operators |
+|----------|-----------|
+| `text`   | `contains`, `starts_with`, `eq`, `is_empty`, `is_not_empty` |
+| `enum`   | `eq`, `neq`, `in`, `not_in` |
+| `number` | `eq`, `gte`, `lte`, `between` |
+| `date`   | `gte`, `lte`, `is_empty`, `is_not_empty` |
+
+**2. Apply filters/sorting in the controller** with `include FiltersFromParams`:
+
+```ruby
+class ProductsController < ApplicationController
+  include FiltersFromParams
+
+  def index
+    @filterable_model = Product
+    scope = apply_url_filters(Product.all)
+    scope = apply_url_sorting(scope, { "name" => :name, "price" => :price }, default_sort: "name")
+    @pagy, @products = pagy(scope, limit: 50)
+  end
+end
+```
+
+`apply_url_sorting` maps a `sort` key to a column (`Symbol`) or raw SQL
+expression (`String`); unparseable date filters and unknown columns are no-ops.
+
+**3. Render the headers + active-filter pills** in the view:
+
+```erb
+<table>
+  <thead>
+    <tr>
+      <%= filterable_th "Name", "name", column: "name" %>
+      <%= filterable_th "Category", "cat", column: "category" %>
+      <%= filterable_th "Price", "price", column: "price", align: :right %>
+      <%= sortable_th "Created", "created" %> <%# sort-only, no filter %>
+    </tr>
+    <%= render "shared/filter_pills", model: Product, clear_path: products_path, colspan: 4 %>
+  </thead>
+  <tbody>...</tbody>
+</table>
+```
+
+`filterable_th` reads the column's type (and, for enums, its values) from the
+model's `Filterable` declaration. Files: `app/models/concerns/filterable.rb`,
+`app/controllers/concerns/filters_from_params.rb`,
+`app/javascript/alpine/column_filter.js`, `app/views/shared/_filterable_th.html.erb`,
+`app/views/shared/_filter_pills.html.erb`, and the filter helpers in
+`app/helpers/ui_helper.rb`.
 
 ### Adding an article
 

@@ -1,0 +1,101 @@
+<%# locals: label, sort_key, column, type, values %>
+<%
+  is_sorted = params[:sort] == sort_key
+  sort_dir = params[:dir] || "asc"
+  current_filter = params.dig(:f, column)
+  has_filter = current_filter.present? && current_filter.values.any?(&:present?)
+
+  config = {
+    column: column,
+    type: type.to_s,
+    sortKey: sort_key,
+    values: values || []
+  }
+%>
+
+<div x-data='columnFilter(<%= raw json_escape(config.to_json) %>)' class="inline-flex items-center">
+  <button type="button" x-ref="trigger" @click="toggle()"
+    class="w-full flex items-center justify-between gap-1 hover:text-gray-900 dark:hover:text-gray-200 group">
+    <span class="flex items-center gap-1">
+      <span><%= label %></span>
+      <% if is_sorted %>
+        <span class="text-gray-900 dark:text-gray-100"><%= sort_dir == "desc" ? "↓" : "↑" %></span>
+      <% end %>
+      <% if has_filter %>
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" title="Filter active"></span>
+      <% end %>
+    </span>
+    <svg class="w-3 h-3 opacity-0 group-hover:opacity-50 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </button>
+
+  <template x-teleport="body">
+  <div x-show="open" x-transition @click.outside="open = false" @keydown.escape.window="open = false"
+    :style="`top: ${panelTop}px; left: ${panelLeft}px;`"
+    class="fixed w-64 whitespace-normal bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 text-xs font-normal normal-case tracking-normal text-gray-700 dark:text-gray-200"
+    style="display: none;">
+
+    <div class="p-2 border-b border-gray-200 dark:border-gray-700">
+      <button type="button" @click="applySort('asc')" class="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+        Sort <%= type == :text || type == :enum ? "A → Z" : "Low → High" %>
+      </button>
+      <button type="button" @click="applySort('desc')" class="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
+        Sort <%= type == :text || type == :enum ? "Z → A" : "High → Low" %>
+      </button>
+    </div>
+
+    <div class="p-2 space-y-2">
+      <% if type == :enum %>
+        <input type="text" x-model="search" placeholder="Search values..." class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-xs py-1.5">
+        <div class="max-h-48 overflow-y-auto space-y-1 pr-1">
+          <template x-for="value in filteredEnumValues" :key="(value && value.value) ?? value">
+            <label class="flex items-center gap-2 px-1 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+              <input type="checkbox" :value="(value && value.value) ?? value" x-model="selectedValues" class="rounded border-gray-300 dark:border-gray-700 dark:bg-gray-800">
+              <span x-text="(value && value.label) ?? value" class="truncate"></span>
+            </label>
+          </template>
+          <p x-show="filteredEnumValues.length === 0" class="px-1 py-1 text-gray-400 dark:text-gray-500">No values</p>
+        </div>
+      <% elsif type == :number %>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">Min (≥)</label>
+            <input type="number" x-model="minValue" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-xs py-1.5" placeholder="Min">
+          </div>
+          <div>
+            <label class="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">Max (≤)</label>
+            <input type="number" x-model="maxValue" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-xs py-1.5" placeholder="Max">
+          </div>
+        </div>
+      <% elsif type == :date %>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">From (≥)</label>
+            <input type="date" x-model="dateFrom" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-xs py-1.5">
+          </div>
+          <div>
+            <label class="block text-[11px] text-gray-500 dark:text-gray-400 mb-1">To (≤)</label>
+            <input type="date" x-model="dateTo" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-xs py-1.5">
+          </div>
+        </div>
+      <% else %>
+        <select x-model="textOp" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-xs py-1.5">
+          <option value="contains">Contains</option>
+          <option value="starts_with">Starts with</option>
+          <option value="eq">Equals</option>
+          <option value="is_empty">Is empty</option>
+          <option value="is_not_empty">Is not empty</option>
+        </select>
+        <input type="text" x-model="textValue"
+          :disabled="['is_empty', 'is_not_empty'].includes(textOp)"
+          class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-xs py-1.5 disabled:opacity-50"
+          placeholder="Enter text">
+      <% end %>
+    </div>
+
+    <div class="p-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <button type="button" @click="clearFilter()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">Clear</button>
+      <button type="button" @click="applyFilter()" class="px-2.5 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">Apply</button>
+    </div>
+  </div>
+  </template>
+</div>

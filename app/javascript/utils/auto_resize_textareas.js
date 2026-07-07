@@ -2,6 +2,7 @@
 // Works with Turbo (listens for turbo:load and turbo:frame-load).
 
 function autoResize(textarea) {
+  if (textarea.offsetParent === null) return // skip hidden textareas whose scrollHeight reads ~0
   textarea.style.overflow = "hidden"
   textarea.style.height = "auto"
   textarea.style.height = textarea.scrollHeight + "px"

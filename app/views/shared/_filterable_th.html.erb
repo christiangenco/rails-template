@@ -29,7 +29,7 @@
   </button>
 
   <template x-teleport="body">
-  <div x-show="open" x-transition @click.outside="open = false" @keydown.escape.window="open = false"
+  <div x-show="open" x-transition data-column-filter-panel @click.outside="open = false" @keydown.escape.window="open = false"
     :style="`top: ${panelTop}px; left: ${panelLeft}px;`"
     class="fixed w-64 whitespace-normal bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 text-xs font-normal normal-case tracking-normal text-gray-700 dark:text-gray-200"
     style="display: none;">

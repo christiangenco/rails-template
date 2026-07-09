@@ -26,8 +26,15 @@ document.addEventListener("alpine:init", () => {
       }
       this._positionPanel()
       this.open = true
-      this._closeOnScroll = () => { this.open = false }
-      window.addEventListener("scroll", this._closeOnScroll, { capture: true, once: true })
+      this._closeOnScroll = (event) => {
+        // Scrolling *inside* the panel (e.g. the enum values list) must not close it —
+        // only page/table scrolls, which slide the trigger out from under the fixed panel.
+        // capture:true means this fires for scrolls of any nested element, so we discriminate
+        // by target. Document/window scrolls have a non-Element target, so they fall through.
+        if (event.target instanceof Element && event.target.closest("[data-column-filter-panel]")) return
+        this.open = false
+      }
+      window.addEventListener("scroll", this._closeOnScroll, { capture: true })
     },
 
     _positionPanel() {

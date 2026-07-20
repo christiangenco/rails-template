@@ -1,6 +1,7 @@
 require_relative "boot"
 
 require "rails"
+require_relative "../app/middleware/stack_obfuscation_middleware"
 # Pick the frameworks you want:
 require "active_model/railtie"
 require "active_job/railtie"
@@ -28,6 +29,12 @@ module RailsTemplate
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # rails_icons reads SVGs from disk (File.read), not through Propshaft, so keep the
+    # icon set out of the asset digest — precompile shouldn't fingerprint ~1300 files.
+    # NOTE: must live here, not in config/initializers/assets.rb — Propshaft reads
+    # excluded_paths in an engine initializer that runs before app initializers.
+    config.assets.excluded_paths = [Rails.root.join("app/assets/svg")]
+
     # Use vips for Active Storage image processing
     config.active_storage.variant_processor = :vips
 
@@ -42,6 +49,9 @@ module RailsTemplate
     # Don't generate system test files.
     config.generators.system_tests = nil
 
-
+    # Reduce framework fingerprinting in default responses.
+    config.middleware.delete ActionDispatch::RequestId
+    config.middleware.delete Rack::Runtime
+    config.middleware.insert_before 0, StackObfuscationMiddleware
   end
 end

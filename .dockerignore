@@ -7,3 +7,4 @@ node_modules
 .kamal
 config/master.key
 config/credentials/*.key
+plans/

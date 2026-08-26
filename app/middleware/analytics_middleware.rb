@@ -1,5 +1,6 @@
 class AnalyticsMiddleware
   SKIP_PATHS = %w[/health /assets /packs].freeze
+  SLOW_MS = 2_000
 
   def initialize(app)
     @app = app
@@ -24,6 +25,19 @@ class AnalyticsMiddleware
         user_id: user_id,
         session_id: session_id
       )
+
+      if duration >= SLOW_MS
+        AnalyticsClient.track(
+          event_type: "exception",
+          request: request,
+          status: status,
+          duration_ms: duration,
+          user_id: user_id,
+          session_id: session_id,
+          error_class: "SlowRequest",
+          error_message: "#{request.method} #{request.path} took #{duration}ms"
+        )
+      end
     end
 
     [status, headers, response]

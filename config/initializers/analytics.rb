@@ -34,3 +34,18 @@ class AnalyticsErrorSubscriber
   end
 end
 Rails.error.subscribe(AnalyticsErrorSubscriber.new)
+
+# Attaches slow queries to the current request's env so AnalyticsMiddleware can
+# fold them into the SlowRequest ticket. No standalone `sql` event. Capped per
+# request so a query storm can't inflate a single event payload.
+ActiveSupport::Notifications.subscribe("sql.active_record") do |event|
+  next if event.duration < 100 || event.payload[:name] == "SCHEMA" || event.payload[:cached]
+  env = ActiveSupport::ExecutionContext.to_h[:controller]&.request&.env or next
+  slow_sql = (env["analytics.slow_sql"] ||= [])
+  next if slow_sql.size >= 20
+  slow_sql << {
+    name: event.payload[:name],
+    ms: event.duration.round,
+    sql: event.payload[:sql].to_s.gsub(/'[^']*'/, "?").truncate(500)
+  }
+end

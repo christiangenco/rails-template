@@ -26,7 +26,7 @@ class AnalyticsMiddleware
         session_id: session_id
       )
 
-      if duration >= SLOW_MS
+      if duration >= SLOW_MS && status.to_i.between?(200, 399) && !multipart?(request)
         AnalyticsClient.track(
           event_type: "exception",
           request: request,
@@ -35,7 +35,8 @@ class AnalyticsMiddleware
           user_id: user_id,
           session_id: session_id,
           error_class: "SlowRequest",
-          error_message: "#{request.method} #{request.path} took #{duration}ms"
+          error_message: "#{controller_action(env)} took #{duration}ms",
+          properties: { slow_sql: env["analytics.slow_sql"] }.compact
         )
       end
     end
@@ -52,5 +53,18 @@ class AnalyticsMiddleware
 
   def skip_tracking?(request)
     SKIP_PATHS.any? { |p| request.path.start_with?(p) }
+  end
+
+  def multipart?(request)
+    request.media_type == "multipart/form-data"
+  end
+
+  # Route identity instead of the raw path, so /properties/142 and
+  # /properties/7 fingerprint as the same issue instead of two.
+  def controller_action(env)
+    path_params = env["action_dispatch.request.path_parameters"]
+    return env["REQUEST_METHOD"] unless path_params
+
+    "#{env["REQUEST_METHOD"]} #{path_params[:controller]}##{path_params[:action]}"
   end
 end

@@ -3,7 +3,6 @@ module Trackable
 
   included do
     before_action :set_analytics_user, :persist_utm_params
-    rescue_from StandardError, with: :track_exception_and_reraise
   end
 
   private
@@ -30,18 +29,5 @@ module Trackable
       session_id: session.id&.to_s,
       properties: properties.presence
     )
-  end
-
-  def track_exception_and_reraise(exception)
-    AnalyticsClient.track(
-      event_type: "exception",
-      request: request,
-      user_id: current_user&.id&.to_s,
-      session_id: session.id&.to_s,
-      error_class: exception.class.name,
-      error_message: exception.message,
-      backtrace: exception.backtrace&.first(20)
-    )
-    raise exception
   end
 end

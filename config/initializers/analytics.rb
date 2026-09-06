@@ -7,3 +7,30 @@ require_relative "../../app/middleware/analytics_middleware"
 Rails.application.config.middleware.use AnalyticsMiddleware
 
 at_exit { AnalyticsBuffer.instance.flush if defined?(AnalyticsBuffer) }
+
+# Reports every unhandled exception Rails knows about: controllers (including
+# API controllers), jobs, and mailers. Not autoloaded: a class defined here
+# can't be reloaded from app/, so it's safe to define and subscribe once at boot.
+class AnalyticsErrorSubscriber
+  def report(error, handled:, severity:, context:, source: nil)
+    controller = context[:controller]
+    job = context[:job]
+    request = controller&.request
+
+    # config.exceptions_app rewrites the env to GET /500 before the error
+    # reporter runs, so the route that actually failed is only in these headers.
+    original = {
+      path: request&.env&.[]("action_dispatch.original_path"),
+      method: request&.env&.[]("action_dispatch.original_request_method")
+    }.compact
+
+    AnalyticsClient.notify(
+      error,
+      request: request,
+      user_id: Current.user&.id&.to_s,
+      properties: { handled: handled, severity: severity, source: source, job: job&.class&.name, job_id: job&.job_id, executions: job&.executions }.compact,
+      **original
+    )
+  end
+end
+Rails.error.subscribe(AnalyticsErrorSubscriber.new)

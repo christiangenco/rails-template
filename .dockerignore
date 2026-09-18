@@ -8,3 +8,10 @@ node_modules
 config/master.key
 config/credentials/*.key
 plans/
+
+# Agent / local scratch — never bake into the image
+.claude/
+.pi-subagents/
+.grok/
+scratch/
+.DS_Store

@@ -15,9 +15,12 @@
 #   --server-ip      Production server IP address
 #   --github-user    GitHub username for GHCR (default: christiangenco)
 #   --s3-bucket      Litestream backup bucket (default: genco-backups)
-#   --smtp-user      SMTP username for Mailgun (e.g. myapp@genco.email)
-#   --smtp-password  SMTP password for Mailgun
-#   --mail-from      Default mailer "from" address (default: same as --smtp-user)
+#   --smtp-user      SMTP username for Mailgun (default: NAME@gxb.vc)
+#   --smtp-password  SMTP password for Mailgun (or set MAILGUN_SMTP_PASSWORD)
+#   --mail-from      Default mailer "from" address (default: noreply@gxb.vc)
+#   --no-mail        Skip mail setup for now; mail raises clearly on first use
+#                    instead of failing SMTP auth silently. Required unless
+#                    --smtp-password/MAILGUN_SMTP_PASSWORD is given.
 #   --help           Show this help message
 
 require "yaml"
@@ -26,6 +29,8 @@ require "fileutils"
 require "optparse"
 require "securerandom"
 require "securerandom"
+
+MAILGUN_DOMAIN = "gxb.vc"
 
 options = {
   github_user: "christiangenco",
@@ -40,9 +45,10 @@ parser = OptionParser.new do |opts|
   opts.on("--server-ip IP", "Production server IP address") { |v| options[:server_ip] = v }
   opts.on("--github-user USER", "GitHub username for GHCR (default: christiangenco)") { |v| options[:github_user] = v }
   opts.on("--s3-bucket BUCKET", "Litestream backup bucket (default: genco-backups)") { |v| options[:s3_bucket] = v }
-  opts.on("--smtp-user USER", "SMTP username for Mailgun (e.g. myapp@genco.email)") { |v| options[:smtp_user] = v }
-  opts.on("--smtp-password PASS", "SMTP password for Mailgun") { |v| options[:smtp_password] = v }
-  opts.on("--mail-from FROM", "Default mailer from address (default: same as --smtp-user)") { |v| options[:mail_from] = v }
+  opts.on("--smtp-user USER", "SMTP username for Mailgun (default: NAME@#{MAILGUN_DOMAIN})") { |v| options[:smtp_user] = v }
+  opts.on("--smtp-password PASS", "SMTP password for Mailgun (or set MAILGUN_SMTP_PASSWORD)") { |v| options[:smtp_password] = v }
+  opts.on("--mail-from FROM", "Default mailer from address (default: noreply@#{MAILGUN_DOMAIN})") { |v| options[:mail_from] = v }
+  opts.on("--no-mail", "Skip mail setup for now (mail raises clearly on first use instead of failing SMTP auth silently)") { options[:no_mail] = true }
   opts.on("-h", "--help", "Show this help message") do
     puts opts
     exit
@@ -68,9 +74,17 @@ domain = options[:domain]
 server_ip = options[:server_ip]
 github_user = options[:github_user]
 s3_bucket = options[:s3_bucket]
-smtp_user = options[:smtp_user]
-smtp_password = options[:smtp_password]
-mail_from = options[:mail_from] || smtp_user
+no_mail = options[:no_mail]
+smtp_password = options[:smtp_password] || ENV["MAILGUN_SMTP_PASSWORD"]
+
+if !no_mail && smtp_password.to_s.empty?
+  puts parser
+  abort "\nError: --smtp-password (or MAILGUN_SMTP_PASSWORD) is required, or pass --no-mail " \
+        "to skip mail setup for now."
+end
+
+smtp_user = options[:smtp_user] || (smtp_password ? "#{app_name}@#{MAILGUN_DOMAIN}" : nil)
+mail_from = options[:mail_from] || "noreply@#{MAILGUN_DOMAIN}"
 
 def run(cmd)
   output = `#{cmd} 2>&1`
@@ -168,46 +182,62 @@ replace_in_file("config/litestream.yml", {
 })
 
 # Step 5: Configure email (production mailer + default from address)
-if smtp_user
-  puts "Configuring email..."
+puts "Configuring email..."
 
-  # Update production.rb: uncomment and configure SMTP settings
-  prod_rb = "config/environments/production.rb"
-  if File.exist?(prod_rb)
-    content = File.read(prod_rb)
+prod_rb = "config/environments/production.rb"
+if File.exist?(prod_rb)
+  content = File.read(prod_rb)
 
-    # Replace the commented-out SMTP block with a configured one
-    content.gsub!(
-      /  # Set host to be used by links generated in mailer templates\.\n  config\.action_mailer\.default_url_options = \{ host: "example\.com" \}\n\n  # Specify outgoing SMTP server.*?#   authentication: :plain\n  # \}/m,
-      <<~RUBY.chomp
-        # Set host to be used by links generated in mailer templates.
-        config.action_mailer.default_url_options = { host: "#{domain}" }
+  content.gsub!(
+    'require_relative "../../app/lib/unconfigured_mail_delivery"',
+    no_mail ? 'require_relative "../../app/lib/unconfigured_mail_delivery"' : 'require_relative "../../app/lib/mailgun_smtp_settings"'
+  )
 
-        # Mailgun SMTP
-        config.action_mailer.smtp_settings = {
-          port: 587,
-          address: "smtp.mailgun.org",
-          user_name: "#{smtp_user}",
-          password: Rails.application.credentials.dig(:mailgun, :smtp_password),
-          authentication: :plain
-        }
-      RUBY
-    )
+  mail_block = if no_mail
+    <<~RUBY.chomp
+      # Set host to be used by links generated in mailer templates.
+      config.action_mailer.default_url_options = { host: "#{domain}" }
 
-    File.write(prod_rb, content)
+      # No Mailgun credentials yet (bin/setup-new-project ran with --no-mail).
+      # Mail delivery raises a clear error the first time a mailer is used,
+      # instead of failing SMTP auth silently. Re-run bin/setup-new-project
+      # with --smtp-password (or set MAILGUN_SMTP_PASSWORD) to enable it.
+      ActionMailer::Base.add_delivery_method :unconfigured, UnconfiguredMailDelivery
+      config.action_mailer.delivery_method = :unconfigured
+    RUBY
+  else
+    <<~RUBY.chomp
+      # Set host to be used by links generated in mailer templates.
+      config.action_mailer.default_url_options = { host: "#{domain}" }
+
+      # Mailgun SMTP
+      config.action_mailer.smtp_settings = MailgunSmtpSettings.for(user_name: "#{smtp_user}")
+    RUBY
   end
 
-  # Update default mailer from address
-  mailer_rb = "app/mailers/application_mailer.rb"
-  if File.exist?(mailer_rb)
-    replace_in_file(mailer_rb, {
-      'default from: "from@example.com"' => "default from: \"#{mail_from}\""
-    })
-  end
+  indented_mail_block = mail_block.lines.map { |line| line.strip.empty? ? line : "  #{line}" }.join
+
+  content.gsub!(
+    /  # Set host to be used by links generated in mailer templates\.\n  config\.action_mailer\.default_url_options = \{ host: "example\.com" \}\n\n  # No Mailgun credentials yet.*?config\.action_mailer\.delivery_method = :unconfigured/m,
+    indented_mail_block
+  )
+
+  File.write(prod_rb, content)
+end
+
+# Update default mailer from address
+mailer_rb = "app/mailers/application_mailer.rb"
+if File.exist?(mailer_rb)
+  replace_in_file(mailer_rb, {
+    'default from: "from@example.com"' => "default from: \"#{mail_from}\""
+  })
+end
+
+if no_mail
+  puts "  Mail left unconfigured (--no-mail): it raises clearly the first time a mailer is used."
 else
-  puts "Skipping email config (no --smtp-user provided)"
-  puts "  You'll need to manually configure SMTP in config/environments/production.rb"
-  puts "  and update the from address in app/mailers/application_mailer.rb"
+  puts "  SMTP user: #{smtp_user}"
+  puts "  Mail from: #{mail_from}"
 end
 
 # Step 6: Sync Dockerfile Ruby version with .ruby-version
@@ -247,11 +277,10 @@ puts "Next steps:"
 puts
 puts "  1. Point DNS for #{domain} to #{server_ip}"
 puts
-unless smtp_user
-  puts "  2. Configure email sending:"
-  puts "     - Create Mailgun SMTP credentials for your sending domain"
-  puts "     - Run: bin/setup-new-project again with --smtp-user and --smtp-password"
-  puts "     - Or manually edit config/environments/production.rb and credentials"
+if no_mail
+  puts "  2. Configure email sending when this app needs to send mail:"
+  puts "     - Create Mailgun SMTP credentials for #{smtp_user || "#{app_name}@#{MAILGUN_DOMAIN}"}"
+  puts "     - Re-run bin/setup-new-project with --smtp-password (or MAILGUN_SMTP_PASSWORD)"
   puts
 end
 puts "  #{smtp_user ? '2' : '3'}. Deploy:"

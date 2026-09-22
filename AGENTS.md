@@ -59,15 +59,26 @@ bin/setup-new-project --name myapp --domain myapp.com --server-ip 123.45.67.89 \
 
 Regenerates `config/master.key`, generates `secret_key_base` and `active_record_encryption` keys, carries forward shared secrets (GHCR token, Litestream keys), configures Mailgun SMTP, and replaces all placeholders. Run with `--help` for all options.
 
-### Email Setup (Mailgun via genco.email)
+### Email Setup (Mailgun via gxb.vc)
 
-All apps send email through Mailgun using the `genco.email` domain. For each new app:
+All apps send email through Mailgun using the `gxb.vc` domain (default SMTP user
+`NAME@gxb.vc`, default from address `noreply@gxb.vc`, matching what the sites
+platform does). `bin/setup-new-project` refuses to finish without
+`--smtp-password` (or a `MAILGUN_SMTP_PASSWORD` env var) unless you pass
+`--no-mail` explicitly. With `--no-mail`, the app boots fine but any mailer
+raises a clear error ("Mail is not configured for this app...") the first time
+it's used, instead of failing SMTP auth silently against a placeholder
+password — this is what happened to the sites app for five days in September
+2026 (see `plans/reviews/30/andyform-report.md` in the sites repo). In
+production, a credential that goes missing after setup (a bad deploy, a wrong
+master key) raises at boot with one sentence naming the credentials key and
+the setup flag, instead of starting with a nil password.
 
-1. **Create SMTP credentials on Mailgun** for `myapp@genco.email`:
+1. **Create SMTP credentials on Mailgun** for `myapp@gxb.vc`:
    ```bash
    curl -s --user "api:YOUR_MAILGUN_API_KEY" \
-     "https://api.mailgun.net/v3/domains/genco.email/credentials" \
-     -d "login=myapp@genco.email" \
+     "https://api.mailgun.net/v3/domains/gxb.vc/credentials" \
+     -d "login=myapp@gxb.vc" \
      -d "password=SomeSecurePassword123!"
    ```
    The Mailgun API key can be retrieved from the running `mailgun-mailboxes` app:
@@ -75,14 +86,21 @@ All apps send email through Mailgun using the `genco.email` domain. For each new
    ssh apps "docker exec \$(docker ps -q --filter name=mailgun-mailboxes-web) bin/rails runner \"puts User.first.mailgun_api_key\""
    ```
 
-2. **Pass the SMTP credentials** to `bin/setup-new-project` via `--smtp-user` and `--smtp-password`.
+2. **Pass the SMTP credentials** to `bin/setup-new-project` via `--smtp-password` (`--smtp-user` and
+   `--mail-from` default from `--name`, override them if the app needs a different address).
 
 3. If you forgot to pass them during setup, manually:
    - Add `mailgun.smtp_password` to Rails credentials (`bin/rails credentials:edit`)
-   - Configure `config/environments/production.rb` with `smtp.mailgun.org`, port 587, and `user_name: "myapp@genco.email"`
+   - Configure `config/environments/production.rb` to require `require_relative "../../app/lib/mailgun_smtp_settings"`
+     and set `config.action_mailer.smtp_settings = MailgunSmtpSettings.for(user_name: "myapp@gxb.vc")`
    - Update `app/mailers/application_mailer.rb` default from address
 
-**⚠️ Common gotcha:** The SMTP `user_name` must match the Mailgun credential you created — NOT `postmaster@genco.email`. If login emails fail with `Net::SMTPAuthenticationError (535 Authentication failed)`, this is almost certainly the issue.
+4. **Verify a send after every deploy that touches mail**: `bundle exec kamal app exec --reuse "bin/mail-check"`
+   sends one message through `ApplicationMailer` to `christian@gxb.vc` (or `MAIL_CHECK_TO`/an argument),
+   prints the SMTP settings in use with the password redacted, and prints the resulting Message-ID
+   (searchable in the Mailgun logs) — or exits non-zero with the delivery error.
+
+**⚠️ Common gotcha:** The SMTP `user_name` must match the Mailgun credential you created — NOT `postmaster@gxb.vc`. If login emails fail with `Net::SMTPAuthenticationError (535 Authentication failed)`, this is almost certainly the issue.
 
 ## GXB Chat Widget Integration
 

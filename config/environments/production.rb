@@ -1,5 +1,9 @@
 require "active_support/core_ext/integer/time"
 
+# This file loads before Zeitwerk's autoloader is set up, so app/lib classes
+# it references have to be required by hand.
+require_relative "../../app/lib/unconfigured_mail_delivery"
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -62,14 +66,13 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "example.com" }
 
-  # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
-  # config.action_mailer.smtp_settings = {
-  #   user_name: Rails.application.credentials.dig(:smtp, :user_name),
-  #   password: Rails.application.credentials.dig(:smtp, :password),
-  #   address: "smtp.example.com",
-  #   port: 587,
-  #   authentication: :plain
-  # }
+  # No Mailgun credentials yet: bin/setup-new-project has not been run with
+  # --smtp-password, or was run with --no-mail. Mail delivery raises a clear
+  # error the first time a mailer is used, instead of failing SMTP auth
+  # silently. bin/setup-new-project replaces this block when --smtp-password
+  # (or MAILGUN_SMTP_PASSWORD) is given.
+  ActionMailer::Base.add_delivery_method :unconfigured, UnconfiguredMailDelivery
+  config.action_mailer.delivery_method = :unconfigured
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+# Run after any deploy that touches mail:
+#   bundle exec kamal app exec --reuse "bin/mail-check"
+#
+# Sends one message through ApplicationMailer to prove mail delivery still
+# works, instead of finding out later from a user. Prints the redacted SMTP
+# settings in use and the resulting Message-ID, and exits non-zero on
+# failure.
+#
+# Recipient: first ARGV entry, else MAIL_CHECK_TO, else christian@gxb.vc.
+
+require_relative "../config/environment"
+
+to = ARGV.first || ENV["MAIL_CHECK_TO"] || "christian@gxb.vc"
+
+settings = ActionMailer::Base.smtp_settings.dup
+settings[:password] = settings[:password].present? ? "[redacted, #{settings[:password].to_s.length} chars]" : "[missing]"
+puts "Delivery method: #{ActionMailer::Base.delivery_method}"
+puts "SMTP settings: #{settings.inspect}"
+puts "Sending to: #{to}"
+
+begin
+  message = ApplicationMailer.mail_check(to: to).deliver_now
+  puts "Sent. Message-ID: #{message.message_id}"
+rescue StandardError => e
+  warn "FAILED: #{e.class}: #{e.message}"
+  exit 1
+end

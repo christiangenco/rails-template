@@ -28,9 +28,27 @@ class AnalyticsErrorSubscriber
       error,
       request: request,
       user_id: Current.user&.id&.to_s,
-      properties: { handled: handled, severity: severity, source: source, job: job&.class&.name, job_id: job&.job_id, executions: job&.executions }.compact,
+      properties: {
+        handled: handled, severity: severity, source: source,
+        job: job&.class&.name, job_id: job&.job_id, executions: job&.executions,
+        queue: job&.queue_name, job_arguments: job && job_arguments_summary(job)
+      }.compact,
       **original
     )
+  end
+
+  private
+
+  # Mailer arguments carry recipient addresses and message bodies; every
+  # other job type just gets a count, since we don't know what's safe to
+  # show for an arbitrary job's payload.
+  def job_arguments_summary(job)
+    if job.is_a?(ActionMailer::MailDeliveryJob)
+      mailer, method = job.arguments.first(2)
+      "#{mailer}##{method}"
+    else
+      "#{job.arguments.size} argument(s)"
+    end
   end
 end
 Rails.error.subscribe(AnalyticsErrorSubscriber.new)

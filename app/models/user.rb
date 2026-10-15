@@ -10,6 +10,20 @@ class User < ApplicationRecord
 
   normalizes :email, with: ->(v) { v.strip.downcase.presence }
 
+  # Domain of ONE plain mailbox, or nil for anything else (a list such as
+  # "x@evil.com, y@gxb.vc", "Y <y@gxb.vc>", a newline). Use this, never
+  # end_with?("@gxb.vc") or split("@").last, before granting access by domain.
+  def self.domain_of(email)
+    e = email.to_s.strip.downcase
+    e.match?(/\A[^@\s,;<>]+@[^@\s,;<>]+\z/) ? e.split("@", 2).last : nil
+  end
+
+  # True when the email is one plain mailbox on one of the given domains.
+  def self.email_in_domain?(email, domains)
+    domain = domain_of(email)
+    domain.present? && Array(domains).map { |d| d.to_s.downcase }.include?(domain)
+  end
+
   after_create :ensure_default_team
 
   def ensure_default_team

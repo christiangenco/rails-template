@@ -1,15 +1,21 @@
 require "test_helper"
 
-# User.domain_of reads the domain of ONE plain mailbox. Any other shape returns
-# nil, so code such as `User.domain_of(email) == "gxb.vc"` cannot be fooled by
-# a list like "x@evil.com, y@gxb.vc".
+# User.domain_of reads the domain of ONE plain mailbox using an allowlist of
+# characters. Any other shape returns nil, so code such as
+# `User.domain_of(email) == "gxb.vc"` cannot be fooled by a list like
+# "x@evil.com, y@gxb.vc" or an RFC 2047 encoded-word local part.
 class UserEmailDomainTest < ActiveSupport::TestCase
   ATTACKS = [
     "x@evil.com, y@gxb.vc",
     "x@evil.com,y@gxb.vc",
     "x@evil.com\ny@gxb.vc",
     "Y <y@gxb.vc>",
-    "y@gxb.vc.evil.com"
+    "y@gxb.vc.evil.com",
+    "=?utf-8?q?x=40evil.test=2c?=@gxb.vc",
+    "x%40evil.test@gxb.vc",
+    "x=y@gxb.vc",
+    "x?y@gxb.vc",
+    "\"x\"@gxb.vc"
   ].freeze
 
   ATTACKS.each do |attack|
@@ -34,8 +40,10 @@ class UserEmailDomainTest < ActiveSupport::TestCase
     assert User.email_in_domain?("Y@GXB.VC", "gxb.vc")
   end
 
-  test "a normal staff email is accepted" do
+  test "normal staff emails are accepted" do
     assert User.email_in_domain?("christian@gxb.vc", "gxb.vc")
     assert User.email_in_domain?("christian@gxb.vc", %w[gxb.vc gen.co])
+    assert User.email_in_domain?("first.last+tag@gxb.vc", "gxb.vc")
+    assert User.email_in_domain?("a_b-c@gxb.vc", "gxb.vc")
   end
 end

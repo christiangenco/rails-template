@@ -11,11 +11,14 @@ class User < ApplicationRecord
   normalizes :email, with: ->(v) { v.strip.downcase.presence }
 
   # Domain of ONE plain mailbox, or nil for anything else (a list such as
-  # "x@evil.com, y@gxb.vc", "Y <y@gxb.vc>", a newline). Use this, never
-  # end_with?("@gxb.vc") or split("@").last, before granting access by domain.
+  # "x@evil.com, y@gxb.vc", "Y <y@gxb.vc>", a quoted or RFC 2047 encoded-word
+  # local part). Allowlist, not a blocklist. Use this, never end_with?("@gxb.vc")
+  # or split("@").last, before granting access by domain.
+  EMAIL_SHAPE = /\A[a-z0-9._+-]+@[a-z0-9-]+(\.[a-z0-9-]+)+\z/
+
   def self.domain_of(email)
     e = email.to_s.strip.downcase
-    e.match?(/\A[^@\s,;<>]+@[^@\s,;<>]+\z/) ? e.split("@", 2).last : nil
+    e.match?(EMAIL_SHAPE) ? e.split("@", 2).last : nil
   end
 
   # True when the email is one plain mailbox on one of the given domains.

@@ -16,7 +16,13 @@
 #   --github-user    GitHub username for GHCR (default: christiangenco)
 #   --s3-bucket      Litestream backup bucket (default: genco-backups)
 #   --smtp-user      SMTP username for Mailgun (default: NAME@gxb.vc)
-#   --smtp-password  SMTP password for Mailgun (or set MAILGUN_SMTP_PASSWORD)
+#   --create-smtp    Make a random 32-character SMTP password and create the
+#                    Mailgun SMTP login for it (recommended). The password goes
+#                    only into credentials; it is never printed. Mailgun API key
+#                    from MAILGUN_API_KEY_FILE (default ~/tools/mailgun-cli/.env).
+#   --smtp-password-file PATH  Read the SMTP password from a mode-600 file
+#   --smtp-password  SMTP password for Mailgun (or set MAILGUN_SMTP_PASSWORD);
+#                    lands in shell history, prefer --create-smtp
 #   --mail-from      Default mailer "from" address (default: noreply@gxb.vc)
 #   --no-mail        Skip mail setup for now; mail raises clearly on first use
 #                    instead of failing SMTP auth silently. Required unless
@@ -47,6 +53,8 @@ parser = OptionParser.new do |opts|
   opts.on("--s3-bucket BUCKET", "Litestream backup bucket (default: genco-backups)") { |v| options[:s3_bucket] = v }
   opts.on("--smtp-user USER", "SMTP username for Mailgun (default: NAME@#{MAILGUN_DOMAIN})") { |v| options[:smtp_user] = v }
   opts.on("--smtp-password PASS", "SMTP password for Mailgun (or set MAILGUN_SMTP_PASSWORD)") { |v| options[:smtp_password] = v }
+  opts.on("--smtp-password-file PATH", "Read the SMTP password from a mode-600 file") { |v| options[:smtp_password_file] = v }
+  opts.on("--create-smtp", "Make a random SMTP password and create the Mailgun login (recommended)") { options[:create_smtp] = true }
   opts.on("--mail-from FROM", "Default mailer from address (default: noreply@#{MAILGUN_DOMAIN})") { |v| options[:mail_from] = v }
   opts.on("--no-mail", "Skip mail setup for now (mail raises clearly on first use instead of failing SMTP auth silently)") { options[:no_mail] = true }
   opts.on("-h", "--help", "Show this help message") do
@@ -76,14 +84,38 @@ github_user = options[:github_user]
 s3_bucket = options[:s3_bucket]
 no_mail = options[:no_mail]
 smtp_password = options[:smtp_password] || ENV["MAILGUN_SMTP_PASSWORD"]
+if (pw_file = options[:smtp_password_file])
+  abort "Error: #{pw_file} must be mode 600" unless (File.stat(pw_file).mode & 0o777) == 0o600
+  smtp_password = File.read(pw_file).strip
+end
+smtp_password = SecureRandom.alphanumeric(32) if options[:create_smtp]
 
 if !no_mail && smtp_password.to_s.empty?
   puts parser
-  abort "\nError: --smtp-password (or MAILGUN_SMTP_PASSWORD) is required, or pass --no-mail " \
-        "to skip mail setup for now."
+  abort "\nError: --create-smtp (or --smtp-password-file, --smtp-password, MAILGUN_SMTP_PASSWORD) is required, " \
+        "or pass --no-mail to skip mail setup for now."
+end
+
+# A short or example password is guessable: the AGENTS.md example was once used as a real password (Oct 2026).
+if smtp_password && smtp_password.length < 24
+  abort "Error: the SMTP password must be at least 24 characters. Use --create-smtp for a random one."
 end
 
 smtp_user = options[:smtp_user] || (smtp_password ? "#{app_name}@#{MAILGUN_DOMAIN}" : nil)
+
+# Create the Mailgun SMTP login with the random password. Prints the HTTP status only.
+if options[:create_smtp]
+  require "net/http"
+  key_file = File.expand_path(ENV.fetch("MAILGUN_API_KEY_FILE", "~/tools/mailgun-cli/.env"))
+  api_key = File.read(key_file)[/^MAILGUN_API_KEY=["']?([^"'\s]+)/, 1] || File.read(key_file).strip
+  uri = URI("https://api.mailgun.net/v3/domains/#{smtp_user.split("@").last}/credentials")
+  req = Net::HTTP::Post.new(uri)
+  req.basic_auth("api", api_key)
+  req.set_form_data("login" => smtp_user, "password" => smtp_password)
+  res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }
+  abort "Error: Mailgun did not create #{smtp_user} (HTTP #{res.code}). Nothing was written." unless res.code == "200"
+  puts "  Mailgun SMTP login #{smtp_user} created (random 32-character password, stored only in credentials)"
+end
 mail_from = options[:mail_from] || "noreply@#{MAILGUN_DOMAIN}"
 
 def run(cmd)

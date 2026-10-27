@@ -74,20 +74,17 @@ production, a credential that goes missing after setup (a bad deploy, a wrong
 master key) raises at boot with one sentence naming the credentials key and
 the setup flag, instead of starting with a nil password.
 
-1. **Create SMTP credentials on Mailgun** for `myapp@gxb.vc`:
-   ```bash
-   curl -s --user "api:YOUR_MAILGUN_API_KEY" \
-     "https://api.mailgun.net/v3/domains/gxb.vc/credentials" \
-     -d "login=myapp@gxb.vc" \
-     -d "password=SomeSecurePassword123!"
-   ```
-   The Mailgun API key can be retrieved from the running `mailgun-mailboxes` app:
-   ```bash
-   ssh apps "docker exec \$(docker ps -q --filter name=mailgun-mailboxes-web) bin/rails runner \"puts User.first.mailgun_api_key\""
-   ```
+1. **Let the setup script make the SMTP login.** Pass `--create-smtp` to `bin/setup-new-project`. It makes a
+   random 32-character password, creates the Mailgun SMTP login `NAME@gxb.vc` with it, and stores it only in the
+   new app's credentials. It never prints the password. The Mailgun API key is read from a file
+   (`MAILGUN_API_KEY_FILE`, default `~/tools/mailgun-cli/.env`).
+   - Never type or copy an example password. In October 2026 an app ran for months with the example password
+     from this file, and the example was in every agent log.
+   - Never print the Mailgun API key (no `puts ...mailgun_api_key`, no `credentials:show`). To check a key, use
+     `bin/cred-check APP NAME` in `~/projects/hq` (presence, length and a short hash only).
 
-2. **Pass the SMTP credentials** to `bin/setup-new-project` via `--smtp-password` (`--smtp-user` and
-   `--mail-from` default from `--name`, override them if the app needs a different address).
+2. If you already made a login by hand, pass its password with `--smtp-password-file PATH` (a mode-600 file)
+   instead of on the command line. `--smtp-user` and `--mail-from` default from `--name`.
 
 3. If you forgot to pass them during setup, manually:
    - Add `mailgun.smtp_password` to Rails credentials (`bin/rails credentials:edit`)

@@ -15,3 +15,6 @@ plans/
 .grok/
 scratch/
 .DS_Store
+
+# Ignore all environment files.
+/.env*

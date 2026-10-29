@@ -35,6 +35,8 @@ module Teams
           redirect_to settings_memberships_path(@team), alert: "Cannot remove the team owner"
         elsif membership.user == current_user
           redirect_to settings_memberships_path(@team), alert: "Cannot remove yourself"
+        elsif !membership.member? && !@team.memberships.find_by(user: current_user)&.owner?
+          redirect_to settings_memberships_path(@team), alert: "Only the team owner can remove an admin"
         else
           membership.destroy!
           redirect_to settings_memberships_path(@team), notice: "Member removed"

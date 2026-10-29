@@ -102,6 +102,20 @@ class Teams::Settings::MembershipsControllerTest < ActionDispatch::IntegrationTe
     assert_equal "member", other_m.reload.role
   end
 
+  test "remove: an admin removes a plain member but not another admin; the owner removes an admin" do
+    sign_in @admin
+    delete settings_membership_path(team_id: @team.id, id: @admin2_m.id)
+    assert Membership.exists?(@admin2_m.id)
+    delete settings_membership_path(team_id: @team.id, id: @member2_m.id)
+    assert_not Membership.exists?(@member2_m.id)
+
+    sign_in @owner
+    delete settings_membership_path(team_id: @team.id, id: @admin2_m.id)
+    assert_not Membership.exists?(@admin2_m.id)
+    delete settings_membership_path(team_id: @team.id, id: @owner_m.id)
+    assert Membership.exists?(@owner_m.id)
+  end
+
   test "strong parameters ignore user_id and team_id" do
     sign_in @owner
     patch_membership @member_m, { role: "admin", user_id: @owner.id, team_id: 999 }

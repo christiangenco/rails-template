@@ -8,7 +8,7 @@ module CopyHelper
     duration = options.delete(:duration) || 2000
     from = options.delete(:from)
     plain = options.delete(:plain) || false
-    
+
     # Build Alpine x-data
     if from
       copy_action = "navigator.clipboard.writeText(document.querySelector('#{from}').textContent.trim())"
@@ -16,12 +16,12 @@ module CopyHelper
       escaped_value = value.to_s.gsub("'", "\\\\'")
       copy_action = "navigator.clipboard.writeText('#{escaped_value}')"
     end
-    
+
     alpine_data = {
       copied: false,
       copy: "#{copy_action}; copied = true; setTimeout(() => copied = false, #{duration})"
     }
-    
+
     # Build button content
     content = if icon_only
       # Show only icons, swap on copy
@@ -42,7 +42,7 @@ module CopyHelper
         </span>
       HTML
     end
-    
+
     if plain
       # Plain button without btn styling
       btn_class = options.delete(:class) || "inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
@@ -59,7 +59,7 @@ module CopyHelper
       # Use btn helper
       variant = options.delete(:variant) || :primary
       size = options.delete(:size) || :sm
-      
+
       content_tag(
         :button,
         content,
@@ -76,9 +76,9 @@ module CopyHelper
       )
     end
   end
-  
+
   private
-  
+
   def copy_btn_size_classes(size, variant)
     base = case size
     when :xs then "px-2.5 py-1.5 text-xs"
@@ -87,7 +87,7 @@ module CopyHelper
     when :lg then "px-5 py-3 text-base"
     else "px-3 py-2 text-sm"
     end
-    
+
     color = case variant
     when :primary
       "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
@@ -98,7 +98,7 @@ module CopyHelper
     else
       "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 dark:bg-gray-500 dark:hover:bg-gray-600"
     end
-    
+
     "#{base} #{color}"
   end
 end

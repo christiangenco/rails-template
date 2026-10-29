@@ -1,7 +1,7 @@
 module ButtonHelper
   def btn(text = nil, **options, &block)
     text = capture(&block) if block_given?
-    
+
     variant = options.delete(:variant) || :primary
     size = options.delete(:size) || :md
     outline = options.delete(:outline) || false
@@ -12,7 +12,7 @@ module ButtonHelper
     href = options.delete(:href)
     method = options.delete(:method)
     url = options.delete(:url)
-    
+
     # Build CSS classes
     classes = [
       "inline-flex items-center justify-center font-medium rounded-lg transition-colors",
@@ -22,18 +22,18 @@ module ButtonHelper
       gap_classes(icon, right_icon, text),
       options.delete(:class)
     ].compact.join(" ")
-    
+
     # Build content with icons
     content = "".html_safe
     content += icon(icon, class: btn_icon_size_class(size)) if icon
     content += text if text
     content += icon(right_icon, class: btn_icon_size_class(size)) if right_icon
-    
+
     # Add data attributes
     data = options.delete(:data) || {}
     data[:turbo_confirm] = confirm if confirm
     options[:data] = data unless data.empty?
-    
+
     # Render appropriate element
     if disabled
       options[:disabled] = true
@@ -51,9 +51,9 @@ module ButtonHelper
       content_tag(:button, content, **options)
     end
   end
-  
+
   private
-  
+
   def btn_size_classes(size)
     case size
     when :xs then "px-2.5 py-1.5 text-xs"
@@ -63,7 +63,7 @@ module ButtonHelper
     else "px-4 py-2.5 text-sm"
     end
   end
-  
+
   def solid_variant_classes(variant)
     case variant
     when :primary
@@ -78,7 +78,7 @@ module ButtonHelper
       "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 dark:bg-gray-500 dark:hover:bg-gray-600"
     end
   end
-  
+
   def outline_variant_classes(variant)
     case variant
     when :primary
@@ -93,12 +93,12 @@ module ButtonHelper
       "border border-gray-600 text-gray-600 hover:bg-gray-50 focus:ring-gray-500 dark:border-gray-400 dark:text-gray-400 dark:hover:bg-gray-950"
     end
   end
-  
+
   def gap_classes(icon, right_icon, text)
     return nil unless text && (icon || right_icon)
     "gap-2"
   end
-  
+
   def btn_icon_size_class(size)
     case size
     when :xs then "size-3"

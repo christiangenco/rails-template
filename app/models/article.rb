@@ -25,7 +25,7 @@ class Article
     def load_articles
       articles_path = Rails.root.join("app", "views", "articles", "content")
       return [] unless Dir.exist?(articles_path)
-      
+
       Dir.glob(articles_path.join("*.html.erb")).filter_map do |file|
         filename = File.basename(file, ".html.erb")
         metadata = extract_metadata(file)
@@ -46,7 +46,7 @@ class Article
     def extract_metadata(file_path)
       content = File.read(file_path)
       if content =~ /\A---\s*\n(.*?)\n---\s*\n/m
-        YAML.safe_load($1, permitted_classes: [Date, Time], symbolize_names: true) || {}
+        YAML.safe_load($1, permitted_classes: [ Date, Time ], symbolize_names: true) || {}
       else
         {}
       end

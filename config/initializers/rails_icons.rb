@@ -1,6 +1,6 @@
 RailsIcons.configure do |config|
   config.default_library = "heroicons"
-  
+
   # Use outline variant by default
   config.libraries.heroicons.default_variant = "outline"
 

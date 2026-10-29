@@ -14,16 +14,16 @@ module UiHelper
     else
       "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
     end
-    
+
     classes = [
       "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
       variant_classes,
       options.delete(:class)
     ].compact.join(" ")
-    
+
     content_tag(:span, text, class: classes, **options)
   end
-  
+
   def heading(text, level: 1, **options)
     classes = case level
     when 1
@@ -41,31 +41,31 @@ module UiHelper
     else
       "text-base font-semibold text-gray-900 dark:text-gray-100"
     end
-    
-    classes = [classes, options.delete(:class)].compact.join(" ")
+
+    classes = [ classes, options.delete(:class) ].compact.join(" ")
     content_tag("h#{level}".to_sym, text, class: classes, **options)
   end
-  
+
   def h1(text, **options)
     heading(text, level: 1, **options)
   end
-  
+
   def h2(text, **options)
     heading(text, level: 2, **options)
   end
-  
+
   def h3(text, **options)
     heading(text, level: 3, **options)
   end
-  
+
   def h4(text, **options)
     heading(text, level: 4, **options)
   end
-  
+
   def h5(text, **options)
     heading(text, level: 5, **options)
   end
-  
+
   def h6(text, **options)
     heading(text, level: 6, **options)
   end
@@ -196,7 +196,7 @@ module UiHelper
       end
     else
       @filterable_enum_values[cache_key] = model
-        .where.not(column => [nil, ""])
+        .where.not(column => [ nil, "" ])
         .distinct
         .order(column)
         .pluck(column)

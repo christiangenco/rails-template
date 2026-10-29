@@ -111,8 +111,8 @@ module Filterable
         (min.blank? || max.blank?) ? rel : rel.where(col => cast.call(min)..cast.call(max))
       when "contains"    then rel.where("#{col_sql} LIKE ?", "%#{sanitize_like(val)}%")
       when "starts_with" then rel.where("#{col_sql} LIKE ?", "#{sanitize_like(val)}%")
-      when "is_empty"    then rel.where(col => [nil, ""])
-      when "is_not_empty" then rel.where.not(col => [nil, ""])
+      when "is_empty"    then rel.where(col => [ nil, "" ])
+      when "is_not_empty" then rel.where.not(col => [ nil, "" ])
       else rel
       end
     end

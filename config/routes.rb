@@ -27,36 +27,36 @@ Rails.application.routes.draw do
   # Team-scoped routes (Phase 6)
   scope "/teams/:team_id", constraints: { team_id: /\d+/ } do
     resources :posts
-    
+
     namespace :settings, module: "teams/settings" do
-      resource :general, only: [:show, :update], controller: "general"
-      resources :memberships, only: [:index, :update, :destroy]
+      resource :general, only: [ :show, :update ], controller: "general"
+      resources :memberships, only: [ :index, :update, :destroy ]
     end
     get "settings", to: redirect { |params, _| "/teams/#{params[:team_id]}/settings/general" }
   end
 
   # Defines the root path route ("/")
   root "home#index"
-  
+
   # Articles (Phase 11)
-  resources :articles, path: "a", only: [:index, :show]
-  
+  resources :articles, path: "a", only: [ :index, :show ]
+
   # UI Test page (Phase 4 verification)
   get "ui_test" => "ui_test#index"
-  
+
   # Authentication (Phase 5)
-  resource :session, only: [:new, :create, :destroy] do
+  resource :session, only: [ :new, :create, :destroy ] do
     scope module: :sessions do
-      resource :verification_code, only: [:show, :create]
+      resource :verification_code, only: [ :show, :create ]
     end
   end
 
   # Profile & Email Change (Phase 7)
-  resource :profile, only: [:show, :update]
+  resource :profile, only: [ :show, :update ]
 
   namespace :users do
-    resources :email_addresses, only: [:new, :create] do
-      resource :confirmation, only: [:show, :create], module: :email_addresses
+    resources :email_addresses, only: [ :new, :create ] do
+      resource :confirmation, only: [ :show, :create ], module: :email_addresses
     end
   end
 

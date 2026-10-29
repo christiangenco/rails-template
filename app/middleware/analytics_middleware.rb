@@ -41,12 +41,12 @@ class AnalyticsMiddleware
       end
     end
 
-    [status, headers, response]
+    [ status, headers, response ]
   rescue => e
     # Never break the app if analytics fails
     Rails.logger.error("[Analytics] Middleware error: #{e.message}")
     raise e if status.nil? # re-raise if the app itself errored
-    [status, headers, response]
+    [ status, headers, response ]
   end
 
   private

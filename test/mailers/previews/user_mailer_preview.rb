@@ -4,7 +4,7 @@ class UserMailerPreview < ActionMailer::Preview
     user = User.first || User.new(email: "user@example.com", name: "John Doe")
     new_email = "newemail@example.com"
     token = user.generate_email_change_token(to: new_email)
-    
+
     UserMailer.email_change_confirmation(
       user: user,
       new_email: new_email,
@@ -15,7 +15,7 @@ class UserMailerPreview < ActionMailer::Preview
   def email_changed_notification
     user = User.first || User.new(email: "newemail@example.com", name: "John Doe")
     old_email = "oldemail@example.com"
-    
+
     UserMailer.email_changed_notification(
       user: user,
       old_email: old_email

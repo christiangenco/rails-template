@@ -1,0 +1,17 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "SQL Injection",
+      "fingerprint": "7e2f6f78c1fc64bb70249ac79fab0d8faf3e0c8bdaa10b2d158ef0238e0ac0ba",
+      "file": "app/controllers/concerns/filters_from_params.rb",
+      "note": "params[:sort] only selects a key of the developer-written sort_map (sort_map.key? check); the SQL text comes from that map, never from the request. params[:dir] becomes the fixed word ASC or DESC. (Security, Oct 28)"
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "fingerprint": "a8d93ba310e9919d8e98c300f6421f6a73674c3f8d2219741f80ae922f15e8a9",
+      "file": "app/controllers/teams/settings/memberships_controller.rb",
+      "note": "role is permitted on purpose; update_refusal allows only admin or member, only by the team owner, never on the owner's or the actor's own membership (6169f6c, tests in test/controllers/teams/settings/memberships_controller_test.rb). (Security, Oct 28)"
+    }
+  ],
+  "brakeman_version": "8.0.5"
+}

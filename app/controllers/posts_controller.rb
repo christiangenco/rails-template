@@ -1,7 +1,7 @@
 class PostsController < ApplicationController
   include TeamScoped
 
-  before_action :set_post, only: [:show, :edit, :update, :destroy]
+  before_action :set_post, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @pagy, @posts = pagy(Current.team.posts.newest_first, limit: 10)

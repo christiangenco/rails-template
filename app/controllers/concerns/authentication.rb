@@ -87,12 +87,12 @@ module Authentication
 
   def redirect_to_verification_code(verification_code)
     set_pending_authentication_token(verification_code.user.email)
-    
+
     if Rails.env.development?
       flash[:verification_code] = verification_code.code
       response.set_header("X-Verification-Code", verification_code.code)
     end
-    
+
     redirect_to session_verification_code_path
   end
 

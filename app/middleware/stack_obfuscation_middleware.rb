@@ -10,6 +10,6 @@ class StackObfuscationMiddleware
     headers.delete("X-Request-Id")
     headers["X-Powered-By"] = "Next.js"
 
-    [status, headers, response]
+    [ status, headers, response ]
   end
 end

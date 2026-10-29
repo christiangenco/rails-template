@@ -45,23 +45,23 @@ class FilterableTest < ActiveSupport::TestCase
   # --- text operators ---
 
   test "text contains matches substrings" do
-    assert_equal [@alpha], filter(:name, "contains" => "lph")
+    assert_equal [ @alpha ], filter(:name, "contains" => "lph")
   end
 
   test "text starts_with matches prefixes only" do
-    assert_equal [@beta], filter(:name, "starts_with" => "Bet")
+    assert_equal [ @beta ], filter(:name, "starts_with" => "Bet")
   end
 
   test "text eq matches exact values" do
-    assert_equal [@gamma], filter(:name, "eq" => "Gamma")
+    assert_equal [ @gamma ], filter(:name, "eq" => "Gamma")
   end
 
   test "text is_empty matches nil and blank strings" do
-    assert_equal [@blank], filter(:name, "is_empty" => "")
+    assert_equal [ @blank ], filter(:name, "is_empty" => "")
   end
 
   test "text is_not_empty excludes nil and blank strings" do
-    assert_equal [@alpha, @beta, @gamma].sort_by(&:id),
+    assert_equal [ @alpha, @beta, @gamma ].sort_by(&:id),
                  filter(:name, "is_not_empty" => "").sort_by(&:id)
   end
 
@@ -73,21 +73,21 @@ class FilterableTest < ActiveSupport::TestCase
   # --- enum operators ---
 
   test "enum eq matches a single value" do
-    assert_equal [@alpha], filter(:category, "eq" => "a")
+    assert_equal [ @alpha ], filter(:category, "eq" => "a")
   end
 
   test "enum neq excludes a value" do
-    assert_equal [@beta, @gamma, @blank].sort_by(&:id),
+    assert_equal [ @beta, @gamma, @blank ].sort_by(&:id),
                  filter(:category, "neq" => "a").sort_by(&:id)
   end
 
   test "enum in matches any of a comma-separated list" do
-    assert_equal [@alpha, @beta, @gamma].sort_by(&:id),
+    assert_equal [ @alpha, @beta, @gamma ].sort_by(&:id),
                  filter(:category, "in" => "a,b").sort_by(&:id)
   end
 
   test "enum not_in excludes a comma-separated list" do
-    assert_equal [@blank], filter(:category, "not_in" => "a,b")
+    assert_equal [ @blank ], filter(:category, "not_in" => "a,b")
   end
 
   test "enum in with an all-blank list is a no-op" do
@@ -98,21 +98,21 @@ class FilterableTest < ActiveSupport::TestCase
   # --- number operators ---
 
   test "number eq matches an exact value" do
-    assert_equal [@beta], filter(:price, "eq" => "20")
+    assert_equal [ @beta ], filter(:price, "eq" => "20")
   end
 
   test "number gte matches values at or above" do
-    assert_equal [@beta, @gamma].sort_by(&:id),
+    assert_equal [ @beta, @gamma ].sort_by(&:id),
                  filter(:price, "gte" => "20").sort_by(&:id)
   end
 
   test "number lte matches values at or below" do
-    assert_equal [@alpha, @beta].sort_by(&:id),
+    assert_equal [ @alpha, @beta ].sort_by(&:id),
                  filter(:price, "lte" => "20").sort_by(&:id)
   end
 
   test "number between matches an inclusive range" do
-    assert_equal [@beta], filter(:price, "between" => "15..25")
+    assert_equal [ @beta ], filter(:price, "between" => "15..25")
   end
 
   test "number between with a blank bound is a no-op" do
@@ -123,31 +123,31 @@ class FilterableTest < ActiveSupport::TestCase
   # --- date operators (ported from taphealth-pipeline) ---
 
   test "date gte returns rows on or after the date" do
-    assert_equal [@beta, @gamma].sort_by(&:id),
+    assert_equal [ @beta, @gamma ].sort_by(&:id),
                  filter(:due_on, "gte" => "2026-06-11").sort_by(&:id)
   end
 
   test "date lte returns rows on or before the date" do
-    assert_equal [@alpha, @beta].sort_by(&:id),
+    assert_equal [ @alpha, @beta ].sort_by(&:id),
                  filter(:due_on, "lte" => "2026-06-11").sort_by(&:id)
   end
 
   test "date gte + lte together form a between-equivalent range" do
-    assert_equal [@beta],
+    assert_equal [ @beta ],
                  Widget.apply_filters(Widget.all, { "due_on" => { "gte" => "2026-02-01", "lte" => "2026-11-30" } }).to_a
   end
 
   test "date is_empty returns rows with NULL due_on" do
-    assert_equal [@blank], filter(:due_on, "is_empty" => "")
+    assert_equal [ @blank ], filter(:due_on, "is_empty" => "")
   end
 
   test "date is_not_empty returns rows with a due_on" do
-    assert_equal [@alpha, @beta, @gamma].sort_by(&:id),
+    assert_equal [ @alpha, @beta, @gamma ].sort_by(&:id),
                  filter(:due_on, "is_not_empty" => "").sort_by(&:id)
   end
 
   test "date gte parses non-ISO date strings via Date.parse" do
-    assert_equal [@beta, @gamma].sort_by(&:id),
+    assert_equal [ @beta, @gamma ].sort_by(&:id),
                  filter(:due_on, "gte" => "June 11, 2026").sort_by(&:id)
   end
 

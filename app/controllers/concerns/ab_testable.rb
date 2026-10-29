@@ -8,7 +8,7 @@ module AbTestable
   # Assignment is sticky per user (or session if logged out).
   # Reports the assignment to analytics automatically.
   def ab_test(experiment, *variants)
-    variants = [:control, :treatment] if variants.empty?
+    variants = [ :control, :treatment ] if variants.empty?
 
     # Sticky assignment: hash user/session + experiment name
     seed = Digest::SHA256.hexdigest("#{experiment}-#{current_user&.id || session.id}")

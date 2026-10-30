@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "securerandom"
+require "net/http"
 
 # Pure helpers for bin/setup-new-project (kept here so they have tests).
 #
@@ -16,6 +17,9 @@ module SetupNewProject
   # `gh auth token` .kamal/secrets passes as KAMAL_REGISTRY_PASSWORD.
   IMAGE_OWNER = "gxbvc"
   REGISTRY_USER = "christiangenco"
+
+  MAILGUN_API = "https://api.mailgun.net/v3"
+  class MailgunError < StandardError; end
 
   module_function
 
@@ -42,6 +46,29 @@ module SetupNewProject
       "myapp.com" => domain,
       "myapp_storage" => "#{app_name}_storage"
     }
+  end
+
+  def mailgun_api_key(path)
+    raw = File.read(path)
+    raw[/^MAILGUN_API_KEY=["']?([^"'\s]+)/, 1] || raw.strip
+  end
+
+  # Creates the Mailgun SMTP login. Errors name the login and the HTTP code, never the password.
+  def create_mailgun_login(login:, password:, api_key:, http: Net::HTTP)
+    uri = URI("#{MAILGUN_API}/domains/#{login.split('@').last}/credentials")
+    req = Net::HTTP::Post.new(uri)
+    req.basic_auth("api", api_key)
+    req.set_form_data("login" => login, "password" => password)
+    res = http.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }
+    raise MailgunError, "Mailgun did not create #{login} (HTTP #{res.code})" unless res.code == "200"
+  end
+
+  # Credentials first, Mailgun login last (Security LOW, Oct 30). If writing the credentials fails,
+  # no login exists. If the login fails, the credentials hold a password that no login uses.
+  # Either way there is never a live login whose password nobody holds.
+  def write_credentials_then_create_login(write_credentials:, create_login: nil)
+    write_credentials.call
+    create_login&.call
   end
 
   # Credentials for the new app: fresh values only. Nothing is copied from the template's

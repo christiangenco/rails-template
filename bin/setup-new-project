@@ -116,18 +116,12 @@ end
 
 smtp_user = options[:smtp_user] || (smtp_password ? "#{app_name}@#{MAILGUN_DOMAIN}" : nil)
 
-# Create the Mailgun SMTP login with the random password. Prints the HTTP status only.
+# --create-smtp: read the Mailgun API key now (fail before anything is written). The login itself
+# is created only after the credentials are saved (Step 2).
 if options[:create_smtp]
-  require "net/http"
   key_file = File.expand_path(ENV.fetch("MAILGUN_API_KEY_FILE", "~/tools/mailgun-cli/.env"))
-  api_key = File.read(key_file)[/^MAILGUN_API_KEY=["']?([^"'\s]+)/, 1] || File.read(key_file).strip
-  uri = URI("https://api.mailgun.net/v3/domains/#{smtp_user.split("@").last}/credentials")
-  req = Net::HTTP::Post.new(uri)
-  req.basic_auth("api", api_key)
-  req.set_form_data("login" => smtp_user, "password" => smtp_password)
-  res = Net::HTTP.start(uri.host, uri.port, use_ssl: true) { |h| h.request(req) }
-  abort "Error: Mailgun did not create #{smtp_user} (HTTP #{res.code}). Nothing was written." unless res.code == "200"
-  puts "  Mailgun SMTP login #{smtp_user} created (random 32-character password, stored only in credentials)"
+  abort "Error: no Mailgun API key file at #{key_file} (set MAILGUN_API_KEY_FILE)" unless File.readable?(key_file)
+  mailgun_api_key = SetupNewProject.mailgun_api_key(key_file)
 end
 mail_from = options[:mail_from] || "noreply@#{MAILGUN_DOMAIN}"
 
@@ -167,9 +161,26 @@ creds_hash = SetupNewProject.credentials_hash(smtp_password: smtp_password)
 creds_yaml = creds_hash.to_yaml
 
 tmpfile = File.expand_path("tmp/new_credentials.yml")
-File.write(tmpfile, creds_yaml)
-run("EDITOR='cp #{tmpfile}' bin/rails credentials:edit")
-FileUtils.rm_f(tmpfile)
+write_credentials = lambda do
+  # Plaintext, so mode 600 and always deleted, even when credentials:edit fails.
+  FileUtils.rm_f(tmpfile) # perm: only applies to a new file; a stale one would keep its old mode
+  File.write(tmpfile, creds_yaml, perm: 0o600)
+  run("EDITOR='cp #{tmpfile}' bin/rails credentials:edit")
+ensure
+  FileUtils.rm_f(tmpfile)
+end
+create_login = if options[:create_smtp]
+  lambda do
+    SetupNewProject.create_mailgun_login(login: smtp_user, password: smtp_password, api_key: mailgun_api_key)
+    puts "  Mailgun SMTP login #{smtp_user} created (random 32-character password, stored only in credentials)"
+  rescue StandardError => e
+    detail = e.is_a?(SetupNewProject::MailgunError) ? e.message : "#{e.class}: #{e.message}"
+    abort "Error: the Mailgun login #{smtp_user} was not created (#{detail}). The new credentials hold a " \
+          "password that no login uses, so there is no live login to clean up. Fix the cause and run " \
+          "bin/setup-new-project again (it makes new credentials)."
+  end
+end
+SetupNewProject.write_credentials_then_create_login(write_credentials: write_credentials, create_login: create_login)
 
 new_master_key = File.read("config/master.key").strip
 puts "  New master key: #{new_master_key[0..3]}#{'*' * (new_master_key.length - 4)}"

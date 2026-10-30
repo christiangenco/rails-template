@@ -16,24 +16,20 @@ class SetupNewProjectTest < ActiveSupport::TestCase
     assert_equal "gxb-ls-widgetco", SetupNewProject.check_s3_bucket!("gxb-ls-widgetco")
   end
 
-  test "only the GHCR token is carried forward from the template credentials" do
-    assert_equal({ "ghcr_token" => %i[ghcr token] }, SetupNewProject::CARRIED_SECRETS)
-    snippet = SetupNewProject.read_carried_secrets_snippet
-    assert_includes snippet, "creds.dig(:ghcr, :token)"
-    refute_match(/litestream|spaces/i, snippet)
+  # Deploys log in to GHCR with `gh auth token` (.kamal/secrets), so no app needs a token in credentials.
+  test "the script reads nothing from the template credentials" do
+    script = File.read(SCRIPT)
+    refute_includes script, "bin/rails runner"
+    refute_includes script, "Rails.application.credentials"
+    refute SetupNewProject.const_defined?(:CARRIED_SECRETS)
+    assert_includes Rails.root.join(".kamal/secrets").read, "KAMAL_REGISTRY_PASSWORD=$(gh auth token)"
   end
 
-  test "new credentials never contain the template's litestream or spaces keys" do
-    template_secrets = {
-      "ghcr_token" => "ghcr-value",
-      "litestream_access_key_id" => "shared-id",
-      "litestream_secret_access_key" => "shared-secret",
-      "spaces_access_key_id" => "shared-spaces-id"
-    }
+  test "new credentials hold only fresh values: no ghcr, litestream or spaces keys" do
+    creds = SetupNewProject.credentials_hash(smtp_password: nil)
 
-    creds = SetupNewProject.credentials_hash(template_secrets, smtp_password: nil)
-
-    assert_equal({ "token" => "ghcr-value" }, creds["ghcr"])
+    assert_equal %w[active_record_encryption secret_key_base], creds.keys.sort
+    refute creds.key?("ghcr")
     refute creds.key?("litestream")
     refute creds.key?("spaces")
     refute creds.key?("do_spaces")
@@ -44,7 +40,7 @@ class SetupNewProjectTest < ActiveSupport::TestCase
   end
 
   test "new credentials hold the SMTP password when one is given" do
-    creds = SetupNewProject.credentials_hash({ "ghcr_token" => "t" }, smtp_password: "x" * 32)
+    creds = SetupNewProject.credentials_hash(smtp_password: "x" * 32)
     assert_equal({ "smtp_password" => "x" * 32 }, creds["mailgun"])
   end
 

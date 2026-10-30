@@ -2,8 +2,9 @@
 # frozen_string_literal: true
 
 # Setup script for creating a new project from the rails-template.
-# Regenerates master.key, carries forward the GHCR token, and replaces
-# all template placeholders with project-specific values.
+# Regenerates master.key and credentials with fresh values (nothing is copied
+# from the template's credentials), and replaces all template placeholders
+# with project-specific values. GHCR: .kamal/secrets uses `gh auth token`.
 # Litestream: one bucket and one key per app. The template's Litestream and
 # Spaces keys are never copied; make the app's own with
 # ~/projects/hq/bin/ls-bucket-per-app provision NAME DIR.
@@ -35,7 +36,6 @@
 #   --help           Show this help message
 
 require "yaml"
-require "json"
 require "fileutils"
 require "optparse"
 require "securerandom"
@@ -156,23 +156,13 @@ if smtp_user
 end
 puts
 
-# Step 1: Read the GHCR token from current credentials (never Litestream or Spaces keys)
-puts "Reading the GHCR token from current credentials..."
-secrets_json = run("bin/rails runner '#{SetupNewProject.read_carried_secrets_snippet}'")
-secrets = JSON.parse(secrets_json.lines.last.to_s)
-
-missing = secrets.select { |_k, v| v.nil? || v.to_s.empty? }
-unless missing.empty?
-  puts "WARNING: Missing credentials: #{missing.keys.join(', ')}"
-  puts "You'll need to add these manually with: bin/rails credentials:edit"
-end
-
-# Step 2: Regenerate master key and credentials
+# Step 1 (reading secrets from the template's credentials) was removed: nothing is copied.
+# Step 2: Regenerate master key and credentials (fresh values only)
 puts "Regenerating master key and credentials..."
 FileUtils.rm_f("config/master.key")
 FileUtils.rm_f("config/credentials.yml.enc")
 
-creds_hash = SetupNewProject.credentials_hash(secrets, smtp_password: smtp_password)
+creds_hash = SetupNewProject.credentials_hash(smtp_password: smtp_password)
 
 creds_yaml = creds_hash.to_yaml
 

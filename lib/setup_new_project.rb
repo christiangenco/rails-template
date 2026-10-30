@@ -17,10 +17,6 @@ module SetupNewProject
   IMAGE_OWNER = "gxbvc"
   REGISTRY_USER = "christiangenco"
 
-  # Template credentials copied into the new app: name => credentials path.
-  # Only the GHCR token. Never litestream, spaces or do_spaces keys.
-  CARRIED_SECRETS = { "ghcr_token" => %i[ghcr token] }.freeze
-
   module_function
 
   def default_s3_bucket(app_name)
@@ -48,17 +44,12 @@ module SetupNewProject
     }
   end
 
-  # Ruby for `bin/rails runner` that prints the carried secrets as JSON.
-  def read_carried_secrets_snippet
-    pairs = CARRIED_SECRETS.map { |name, path| "#{name}: creds.dig(#{path.map(&:inspect).join(', ')})" }
-    "creds = Rails.application.credentials; puts({ #{pairs.join(', ')} }.to_json)"
-  end
-
-  # Credentials for the new app. Only CARRIED_SECRETS are read from `secrets`; any other key is ignored.
-  def credentials_hash(secrets, smtp_password:)
+  # Credentials for the new app: fresh values only. Nothing is copied from the template's
+  # credentials. GHCR: .kamal/secrets passes `gh auth token` at deploy time. Litestream:
+  # ls-bucket-per-app writes the app's own key.
+  def credentials_hash(smtp_password:)
     creds = {
       "secret_key_base" => SecureRandom.hex(64),
-      "ghcr" => { "token" => secrets["ghcr_token"] },
       "active_record_encryption" => {
         "primary_key" => SecureRandom.alphanumeric(32),
         "deterministic_key" => SecureRandom.alphanumeric(32),

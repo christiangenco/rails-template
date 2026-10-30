@@ -165,7 +165,8 @@ bin/setup-new-project --name myapp --domain myapp.com --server-ip 123.45.67.89
 ```
 
 This will:
-- Regenerate `config/master.key` (carrying forward shared secrets like GHCR token and Litestream keys)
+- Regenerate `config/master.key` and credentials with fresh values (nothing is copied from the template's credentials)
+- Default the Litestream bucket to `gxb-ls-NAME` (one bucket and one key per app; make them with `~/projects/hq/bin/ls-bucket-per-app provision NAME DIR`)
 - Replace all placeholders in `config/deploy.yml` and `config/litestream.yml`
 - Print next steps (GitHub secrets, server GHCR login, DNS)
 
@@ -174,8 +175,8 @@ Run `bin/setup-new-project --help` for all options.
 ### Prerequisites
 
 1. **Server**: Any Linux server with Docker (`curl -fsSL https://get.docker.com | sh`)
-2. **GHCR token**: A GitHub PAT (classic) with `repo` + `write:packages` scopes, stored in Rails credentials at `ghcr.token`
-3. **S3 bucket**: For Litestream backups (DigitalOcean Spaces, AWS S3, etc.)
+2. **GHCR login**: `gh auth login` on the Mac that deploys. `.kamal/secrets` passes `gh auth token` as the registry password (needs `write:packages`). Images go to `ghcr.io/gxbvc/NAME`.
+3. **S3 bucket**: One per app, `gxb-ls-NAME`, with its own key (never the shared `genco-backups`)
 4. **DNS**: Point your domain to the server IP
 
 ### Manual configuration
@@ -186,8 +187,6 @@ If you prefer to configure manually instead of using the setup script:
 2. Edit `config/litestream.yml` — set S3 bucket and app-specific path
 3. Add credentials: `bin/rails credentials:edit`
    ```yaml
-   ghcr:
-     token: ghp_your_github_pat
    litestream:
      access_key_id: YOUR_KEY
      secret_access_key: YOUR_SECRET

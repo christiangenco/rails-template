@@ -16,7 +16,8 @@
 #                    storage volume, Litestream path, etc.
 #   --domain         Production domain (default: NAME.com)
 #   --server-ip      Production server IP address
-#   --github-user    GitHub username for GHCR (default: christiangenco)
+#   --image-owner    GHCR image owner: ghcr.io/OWNER/NAME (default: gxbvc)
+#   --github-user    GitHub user for the GHCR registry login (default: christiangenco)
 #   --s3-bucket      Litestream backup bucket (default: gxb-ls-NAME; the shared
 #                    genco-backups bucket is refused)
 #   --smtp-user      SMTP username for Mailgun (default: NAME@gxb.vc)
@@ -43,7 +44,8 @@ require_relative "../lib/setup_new_project"
 MAILGUN_DOMAIN = "gxb.vc"
 
 options = {
-  github_user: "christiangenco"
+  github_user: SetupNewProject::REGISTRY_USER,
+  image_owner: SetupNewProject::IMAGE_OWNER
 }
 
 parser = OptionParser.new do |opts|
@@ -52,7 +54,8 @@ parser = OptionParser.new do |opts|
   opts.on("--name NAME", "App name (lowercase, e.g. widgetco)") { |v| options[:name] = v }
   opts.on("--domain DOMAIN", "Production domain (default: NAME.com)") { |v| options[:domain] = v }
   opts.on("--server-ip IP", "Production server IP address") { |v| options[:server_ip] = v }
-  opts.on("--github-user USER", "GitHub username for GHCR (default: christiangenco)") { |v| options[:github_user] = v }
+  opts.on("--image-owner OWNER", "GHCR image owner (default: #{SetupNewProject::IMAGE_OWNER})") { |v| options[:image_owner] = v }
+  opts.on("--github-user USER", "GitHub user for the GHCR registry login (default: #{SetupNewProject::REGISTRY_USER})") { |v| options[:github_user] = v }
   opts.on("--s3-bucket BUCKET", "Litestream backup bucket (default: gxb-ls-NAME)") { |v| options[:s3_bucket] = v }
   opts.on("--smtp-user USER", "SMTP username for Mailgun (default: NAME@#{MAILGUN_DOMAIN})") { |v| options[:smtp_user] = v }
   opts.on("--smtp-password PASS", "SMTP password for Mailgun (or set MAILGUN_SMTP_PASSWORD)") { |v| options[:smtp_password] = v }
@@ -90,6 +93,7 @@ app_name = options[:name]
 domain = options[:domain]
 server_ip = options[:server_ip]
 github_user = options[:github_user]
+image_owner = options[:image_owner]
 s3_bucket = options[:s3_bucket]
 no_mail = options[:no_mail]
 smtp_password = options[:smtp_password] || ENV["MAILGUN_SMTP_PASSWORD"]
@@ -144,7 +148,7 @@ puts "Setting up new project:"
 puts "  App name:    #{app_name}"
 puts "  Domain:      #{domain}"
 puts "  Server IP:   #{server_ip}"
-puts "  GHCR image:  ghcr.io/#{github_user}/#{app_name}"
+puts "  GHCR image:  ghcr.io/#{image_owner}/#{app_name} (registry login: #{github_user})"
 puts "  Backups:     s3://#{s3_bucket}/#{app_name}/production.sqlite3"
 if smtp_user
   puts "  SMTP user:   #{smtp_user}"
@@ -182,14 +186,10 @@ puts "  New master key: #{new_master_key[0..3]}#{'*' * (new_master_key.length - 
 
 # Step 3: Replace placeholders in deploy.yml
 puts "Updating config/deploy.yml..."
-replace_in_file("config/deploy.yml", {
-  "service: myapp" => "service: #{app_name}",
-  "image: YOUR_GITHUB_USERNAME/myapp" => "image: #{github_user}/#{app_name}",
-  "YOUR_SERVER_IP" => server_ip,
-  "YOUR_GITHUB_USERNAME" => github_user,
-  "myapp.com" => domain,
-  "myapp_storage" => "#{app_name}_storage"
-})
+replace_in_file("config/deploy.yml", SetupNewProject.deploy_yml_replacements(
+  app_name: app_name, domain: domain, server_ip: server_ip,
+  image_owner: image_owner, registry_user: github_user
+))
 
 # Step 4: Update litestream.yml
 puts "Updating config/litestream.yml..."

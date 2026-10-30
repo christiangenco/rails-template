@@ -48,11 +48,28 @@ class SetupNewProjectTest < ActiveSupport::TestCase
     assert_equal({ "smtp_password" => "x" * 32 }, creds["mailgun"])
   end
 
+  test "images go to ghcr.io/gxbvc and the registry login stays the GitHub user" do
+    template = Rails.root.join("config/deploy.yml").read
+    replacements = SetupNewProject.deploy_yml_replacements(
+      app_name: "widgetco", domain: "widgetco.com", server_ip: "203.0.113.1",
+      image_owner: SetupNewProject::IMAGE_OWNER, registry_user: SetupNewProject::REGISTRY_USER
+    )
+    deploy = replacements.reduce(template.dup) { |text, (find, replace)| text.gsub(find, replace) }
+
+    assert_equal "gxbvc", SetupNewProject::IMAGE_OWNER
+    assert_match(/^image: gxbvc\/widgetco$/, deploy)
+    assert_match(/^  username: christiangenco$/, deploy)
+    assert_match(/^service: widgetco$/, deploy)
+    refute_includes deploy, "YOUR_GITHUB_USERNAME"
+    refute_includes deploy, "christiangenco/widgetco"
+  end
+
   test "the script help names the per-app default" do
     out, status = Open3.capture2e("ruby", SCRIPT, "--help")
     assert status.success?, out
     assert_includes out, "gxb-ls-NAME"
     refute_includes out, "default: genco-backups"
+    assert_includes out, "--image-owner"
   end
 
   # Runs in an empty temp folder, so a missing check can never touch this repo's credentials.

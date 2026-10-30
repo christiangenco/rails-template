@@ -12,6 +12,11 @@ module SetupNewProject
   SHARED_BUCKET = "genco-backups"
   BUCKET_PREFIX = "gxb-ls-"
 
+  # Images go to ghcr.io/gxbvc/<app> (GXB org). The registry login is the GitHub user whose
+  # `gh auth token` .kamal/secrets passes as KAMAL_REGISTRY_PASSWORD.
+  IMAGE_OWNER = "gxbvc"
+  REGISTRY_USER = "christiangenco"
+
   # Template credentials copied into the new app: name => credentials path.
   # Only the GHCR token. Never litestream, spaces or do_spaces keys.
   CARRIED_SECRETS = { "ghcr_token" => %i[ghcr token] }.freeze
@@ -28,6 +33,19 @@ module SetupNewProject
                            "(#{BUCKET_PREFIX}NAME, the default) and its own key."
     end
     bucket
+  end
+
+  # Placeholder => value for config/deploy.yml. The image line goes first, so its
+  # YOUR_GITHUB_USERNAME becomes the image owner and the rest become the registry user.
+  def deploy_yml_replacements(app_name:, domain:, server_ip:, image_owner:, registry_user:)
+    {
+      "service: myapp" => "service: #{app_name}",
+      "image: YOUR_GITHUB_USERNAME/myapp" => "image: #{image_owner}/#{app_name}",
+      "YOUR_SERVER_IP" => server_ip,
+      "YOUR_GITHUB_USERNAME" => registry_user,
+      "myapp.com" => domain,
+      "myapp_storage" => "#{app_name}_storage"
+    }
   end
 
   # Ruby for `bin/rails runner` that prints the carried secrets as JSON.

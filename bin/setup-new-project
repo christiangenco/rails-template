@@ -2,8 +2,11 @@
 # frozen_string_literal: true
 
 # Setup script for creating a new project from the rails-template.
-# Regenerates master.key, carries forward shared secrets, and replaces
+# Regenerates master.key, carries forward the GHCR token, and replaces
 # all template placeholders with project-specific values.
+# Litestream: one bucket and one key per app. The template's Litestream and
+# Spaces keys are never copied; make the app's own with
+# ~/projects/hq/bin/ls-bucket-per-app provision NAME DIR.
 #
 # Usage:
 #   bin/setup-new-project --name myapp --domain myapp.com --server-ip 123.45.67.89
@@ -14,7 +17,8 @@
 #   --domain         Production domain (default: NAME.com)
 #   --server-ip      Production server IP address
 #   --github-user    GitHub username for GHCR (default: christiangenco)
-#   --s3-bucket      Litestream backup bucket (default: genco-backups)
+#   --s3-bucket      Litestream backup bucket (default: gxb-ls-NAME; the shared
+#                    genco-backups bucket is refused)
 #   --smtp-user      SMTP username for Mailgun (default: NAME@gxb.vc)
 #   --create-smtp    Make a random 32-character SMTP password and create the
 #                    Mailgun SMTP login for it (recommended). The password goes
@@ -34,13 +38,12 @@ require "json"
 require "fileutils"
 require "optparse"
 require "securerandom"
-require "securerandom"
+require_relative "../lib/setup_new_project"
 
 MAILGUN_DOMAIN = "gxb.vc"
 
 options = {
-  github_user: "christiangenco",
-  s3_bucket: "genco-backups"
+  github_user: "christiangenco"
 }
 
 parser = OptionParser.new do |opts|
@@ -50,7 +53,7 @@ parser = OptionParser.new do |opts|
   opts.on("--domain DOMAIN", "Production domain (default: NAME.com)") { |v| options[:domain] = v }
   opts.on("--server-ip IP", "Production server IP address") { |v| options[:server_ip] = v }
   opts.on("--github-user USER", "GitHub username for GHCR (default: christiangenco)") { |v| options[:github_user] = v }
-  opts.on("--s3-bucket BUCKET", "Litestream backup bucket (default: genco-backups)") { |v| options[:s3_bucket] = v }
+  opts.on("--s3-bucket BUCKET", "Litestream backup bucket (default: gxb-ls-NAME)") { |v| options[:s3_bucket] = v }
   opts.on("--smtp-user USER", "SMTP username for Mailgun (default: NAME@#{MAILGUN_DOMAIN})") { |v| options[:smtp_user] = v }
   opts.on("--smtp-password PASS", "SMTP password for Mailgun (or set MAILGUN_SMTP_PASSWORD)") { |v| options[:smtp_password] = v }
   opts.on("--smtp-password-file PATH", "Read the SMTP password from a mode-600 file") { |v| options[:smtp_password_file] = v }
@@ -76,6 +79,12 @@ unless options[:server_ip]
 end
 
 options[:domain] ||= "#{options[:name]}.com"
+options[:s3_bucket] ||= SetupNewProject.default_s3_bucket(options[:name])
+begin
+  SetupNewProject.check_s3_bucket!(options[:s3_bucket])
+rescue ArgumentError => e
+  abort "Error: #{e.message}"
+end
 
 app_name = options[:name]
 domain = options[:domain]
@@ -143,18 +152,10 @@ if smtp_user
 end
 puts
 
-# Step 1: Read shared secrets from current credentials
-puts "Reading shared secrets from current credentials..."
-secrets_json = run('bin/rails runner "
-  creds = Rails.application.credentials
-  secrets = {
-    ghcr_token: creds.dig(:ghcr, :token),
-    litestream_access_key_id: creds.dig(:litestream, :access_key_id),
-    litestream_secret_access_key: creds.dig(:litestream, :secret_access_key)
-  }
-  puts secrets.to_json
-"')
-secrets = JSON.parse(secrets_json)
+# Step 1: Read the GHCR token from current credentials (never Litestream or Spaces keys)
+puts "Reading the GHCR token from current credentials..."
+secrets_json = run("bin/rails runner '#{SetupNewProject.read_carried_secrets_snippet}'")
+secrets = JSON.parse(secrets_json.lines.last.to_s)
 
 missing = secrets.select { |_k, v| v.nil? || v.to_s.empty? }
 unless missing.empty?
@@ -167,23 +168,7 @@ puts "Regenerating master key and credentials..."
 FileUtils.rm_f("config/master.key")
 FileUtils.rm_f("config/credentials.yml.enc")
 
-creds_hash = {
-  "secret_key_base" => SecureRandom.hex(64),
-  "ghcr" => { "token" => secrets["ghcr_token"] },
-  "litestream" => {
-    "access_key_id" => secrets["litestream_access_key_id"],
-    "secret_access_key" => secrets["litestream_secret_access_key"]
-  },
-  "active_record_encryption" => {
-    "primary_key" => SecureRandom.alphanumeric(32),
-    "deterministic_key" => SecureRandom.alphanumeric(32),
-    "key_derivation_salt" => SecureRandom.alphanumeric(32)
-  }
-}
-
-if smtp_password
-  creds_hash["mailgun"] = { "smtp_password" => smtp_password }
-end
+creds_hash = SetupNewProject.credentials_hash(secrets, smtp_password: smtp_password)
 
 creds_yaml = creds_hash.to_yaml
 
@@ -308,6 +293,9 @@ puts
 puts "Next steps:"
 puts
 puts "  1. Point DNS for #{domain} to #{server_ip}"
+puts
+puts "     Make the backup bucket #{s3_bucket} and its own key (writes them into credentials):"
+puts "     ~/projects/hq/bin/ls-bucket-per-app provision #{app_name} #{Dir.pwd}"
 puts
 if no_mail
   puts "  2. Configure email sending when this app needs to send mail:"

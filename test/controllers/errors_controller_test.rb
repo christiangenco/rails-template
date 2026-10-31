@@ -20,4 +20,25 @@ class ErrorsControllerTest < ActionDispatch::IntegrationTest
     assert_response :internal_server_error
     assert_equal "text/html", response.media_type
   end
+
+  # The real-world case: an unknown path (scanner probe) asked for in a non-HTML format. The router
+  # raises RoutingError and exceptions_app forwards to /404 with the original format still set.
+  test "unknown path with Accept: application/json answers 404" do
+    get "/secrets.json", headers: {"ACCEPT" => "application/json"}
+    assert_response :not_found
+  end
+
+  %w[json yml txt].each do |ext|
+    test "unknown path requested as .#{ext} answers 404" do
+      get "/secrets.#{ext}"
+      assert_response :not_found
+    end
+  end
+
+  test "unknown HTML path still renders the 404 page" do
+    get "/no/such/page"
+    assert_response :not_found
+    assert_equal "text/html", response.media_type
+    assert_match "404", response.body
+  end
 end

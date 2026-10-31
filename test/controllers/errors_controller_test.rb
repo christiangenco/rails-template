@@ -24,7 +24,7 @@ class ErrorsControllerTest < ActionDispatch::IntegrationTest
   # The real-world case: an unknown path (scanner probe) asked for in a non-HTML format. The router
   # raises RoutingError and exceptions_app forwards to /404 with the original format still set.
   test "unknown path with Accept: application/json answers 404" do
-    get "/secrets.json", headers: {"ACCEPT" => "application/json"}
+    get "/secrets.json", headers: { "ACCEPT" => "application/json" }
     assert_response :not_found
   end
 

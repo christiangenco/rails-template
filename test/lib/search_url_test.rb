@@ -54,7 +54,7 @@ class SearchUrlTest < ActiveSupport::TestCase
       nil, "", "   ", "\n\t", "\x00\x01\x02", "%%%%", "://", "http://",
       "https://exa mple.com", "http://[::1]:99999/", "https://例え.テスト/ページ",
       "https://#{'a' * 2000}.com", "-", "HTTP/1.1 200 OK", "https://example.com:notaport/",
-      ["array"], { "hash" => 1 }, 3.14, 42, true, Object.new
+      [ "array" ], { "hash" => 1 }, 3.14, 42, true, Object.new
     ]
     junk.each do |j|
       assert_nothing_raised { SearchUrl.unwrap(j) }
@@ -70,7 +70,7 @@ class SearchUrlTest < ActiveSupport::TestCase
       "http://example.com/\xC3\x28".dup.force_encoding(Encoding::UTF_8),
       "http://\xC3\x28.com/".dup.force_encoding(Encoding::UTF_8),
       "http://\xFF".dup.force_encoding(Encoding::UTF_8),
-      ["http://example.com/\xC3\x28".b, ""].join.force_encoding(Encoding::UTF_8)
+      [ "http://example.com/\xC3\x28".b, "" ].join.force_encoding(Encoding::UTF_8)
     ]
     bad.each do |b|
       assert_nothing_raised { SearchUrl.unwrap(b) }

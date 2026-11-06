@@ -38,7 +38,7 @@ module SearchUrl
   MAX_UNWRAPS = 3
 
   TRACKING_KEYS = %w[gclid fbclid].freeze
-  TRACKING_PREFIXES = ["utm_"].freeze
+  TRACKING_PREFIXES = [ "utm_" ].freeze
 
   OPAQUE_REASONS = {
     google_search: "google.com/search target not in URL",
@@ -197,7 +197,7 @@ module SearchUrl
     def decode_bing_u(value)
       return nil if value.nil?
 
-      [value, value.sub(/\Aa1/, "")].each do |candidate|
+      [ value, value.sub(/\Aa1/, "") ].each do |candidate|
         padded = candidate + ("=" * ((4 - (candidate.length % 4)) % 4))
         decoded = Base64.urlsafe_decode64(padded)
         return decoded.force_encoding(Encoding::UTF_8) if decoded.start_with?("http://", "https://")

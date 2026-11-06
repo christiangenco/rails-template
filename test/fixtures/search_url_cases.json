@@ -1,0 +1,420 @@
+[
+  {
+    "input": "https://www.google.com/url?q=https://example.com/article&ust=sig&utm_source=newsletter",
+    "expected": {
+      "url": "https://example.com/article",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "google_url",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://google.com/url?url=https%3A%2F%2Fexample.org%2Fpage",
+    "expected": {
+      "url": "https://example.org/page",
+      "host": "example.org",
+      "wrapped": true,
+      "wrapper": "google_url",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://WWW.GOOGLE.COM/URL?q=https%3A%2F%2Fexample.com%2Fup",
+    "expected": {
+      "url": "https://example.com/up",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "google_url",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://www.google.com/goto?q=https%3A%2F%2Fexample.com%2Fofficial",
+    "expected": {
+      "url": "https://example.com/official",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "google_goto",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://www.google.com/goto?url=https%3A%2F%2Funrelated-news.example%2Fstory",
+    "expected": {
+      "url": "https://unrelated-news.example/story",
+      "host": "unrelated-news.example",
+      "wrapped": true,
+      "wrapper": "google_goto",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://www.google.com/goto?q=http://user:pass@example.com/x",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "google_goto",
+      "status": "invalid",
+      "reason": "unwrapped target: credentials in URL"
+    }
+  },
+  {
+    "input": "https://www.google.com/goto?sig=abc123",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "google_goto",
+      "status": "opaque_wrapper",
+      "reason": "google.com/goto without embedded target"
+    }
+  },
+  {
+    "input": "https://www.google.com/search?q=site+search&ie=UTF-8",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "google_search",
+      "status": "opaque_wrapper",
+      "reason": "google.com/search target not in URL"
+    }
+  },
+  {
+    "input": "https://news.google.com/articles/CBMiAmNo?oc=5",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "google_news",
+      "status": "opaque_wrapper",
+      "reason": "news.google.com article id: target not in URL"
+    }
+  },
+  {
+    "input": "https://www.google.com/amp/s/example.com/amp-page",
+    "expected": {
+      "url": "https://example.com/amp-page",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "google_amp",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://cdn.ampproject.org/c/s/example.net/story",
+    "expected": {
+      "url": "https://example.net/story",
+      "host": "example.net",
+      "wrapped": true,
+      "wrapper": "google_amp",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://www.bing.com/ck/a?u=a1aHR0cHM6Ly9leGFtcGxlLmNvbS9iaW5nLXRhcmdldA&ntb=1",
+    "expected": {
+      "url": "https://example.com/bing-target",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "bing_ck",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2Fddg&rut=abc",
+    "expected": {
+      "url": "https://example.com/ddg",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "duckduckgo_l",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUxIsAbCdEf123",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "vertex_grounding",
+      "status": "opaque_wrapper",
+      "reason": "vertex grounding redirect id: target not in URL"
+    }
+  },
+  {
+    "input": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.google.com%2Furl%3Fq%3Dhttps%253A%252F%252Fexample.com%252Fdeep",
+    "expected": {
+      "url": "https://example.com/deep",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "duckduckgo_l",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.google.com%2Fgoto%3Fq%3Dhttps%253A%252F%252Fwww.google.com%252Furl%253Fq%253Dhttps%25253A%25252F%25252Fexample.com%25252Ffinal3",
+    "expected": {
+      "url": "https://example.com/final3",
+      "host": "example.com",
+      "wrapped": true,
+      "wrapper": "duckduckgo_l",
+      "status": "unwrapped",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.google.com%2Furl%3Furl%3Dhttps%253A%252F%252Fwww.google.com%252Fgoto%253Fq%253Dhttps%25253A%25252F%25252Fwww.google.com%25252Furl%25253Furl%25253Dhttps%2525253A%2525252F%2525252Fexample.com%2525252Ffinal4",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "duckduckgo_l",
+      "status": "invalid",
+      "reason": "wrapper nested more than 3 levels"
+    }
+  },
+  {
+    "input": "https://docs.google.com/document/d/abc123/edit",
+    "expected": {
+      "url": "https://docs.google.com/document/d/abc123/edit",
+      "host": "docs.google.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://sites.google.com/view/example-site/home",
+    "expected": {
+      "url": "https://sites.google.com/view/example-site/home",
+      "host": "sites.google.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://drive.google.com/file/d/abc123/view",
+    "expected": {
+      "url": "https://drive.google.com/file/d/abc123/view",
+      "host": "drive.google.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "ftp://example.com/file.txt",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "non-http(s) scheme"
+    }
+  },
+  {
+    "input": "javascript:alert(1)",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "non-http(s) scheme"
+    }
+  },
+  {
+    "input": "https://user:pass@example.com/page",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "credentials in URL"
+    }
+  },
+  {
+    "input": "http://93.184.216.34/page",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://10.0.0.5/admin",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://192.168.1.10:8080/router",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://localhost:3000/admin",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "private host"
+    }
+  },
+  {
+    "input": "https://api.internal.local/health",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "private host"
+    }
+  },
+  {
+    "input": "HTTPS://EXAMPLE.COM/Page",
+    "expected": {
+      "url": "https://example.com/Page",
+      "host": "example.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://www.example.com/story",
+    "expected": {
+      "url": "https://www.example.com/story",
+      "host": "example.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://example.com/post?id=7&utm_source=newsletter&gclid=xyz&fbclid=abc#section",
+    "expected": {
+      "url": "https://example.com/post?id=7",
+      "host": "example.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "http://example.com/plain",
+    "expected": {
+      "url": "http://example.com/plain",
+      "host": "example.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://example.com/",
+    "expected": {
+      "url": "https://example.com/",
+      "host": "example.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "not a url",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "unparseable URL"
+    }
+  },
+  {
+    "input": "://broken",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "unparseable URL"
+    }
+  },
+  {
+    "input": "",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "empty or not a string"
+    }
+  },
+  {
+    "input": "   ",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "empty or not a string"
+    }
+  },
+  {
+    "input": null,
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "empty or not a string"
+    }
+  }
+]

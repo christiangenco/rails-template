@@ -22,7 +22,13 @@ class SetupNewProjectTest < ActiveSupport::TestCase
     refute_includes script, "bin/rails runner"
     refute_includes script, "Rails.application.credentials"
     refute SetupNewProject.const_defined?(:CARRIED_SECRETS)
-    assert_includes Rails.root.join(".kamal/secrets").read, "KAMAL_REGISTRY_PASSWORD=$(gh auth token)"
+  end
+
+  test "deploys log in to GHCR with gh auth token from .kamal/secrets" do
+    secrets = Rails.root.join(".kamal/secrets")
+    skip ".kamal/secrets is not copied to the Studio (suite-remote filter)" unless secrets.exist?
+
+    assert_includes secrets.read, "KAMAL_REGISTRY_PASSWORD=$(gh auth token)"
   end
 
   test "new credentials hold only fresh values: no ghcr, litestream or spaces keys" do

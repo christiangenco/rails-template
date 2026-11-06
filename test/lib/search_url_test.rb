@@ -62,6 +62,29 @@ class SearchUrlTest < ActiveSupport::TestCase
     end
   end
 
+  test "never raises on invalid UTF-8 bytes and very long input" do
+    # Raw invalid UTF-8 bytes cannot be carried in the shared JSON (a JSON
+    # file is Unicode text), so these live here; the TS port has its own
+    # copy of this test in test/searchUrl.test.ts.
+    bad = [
+      "http://example.com/\xC3\x28".dup.force_encoding(Encoding::UTF_8),
+      "http://\xC3\x28.com/".dup.force_encoding(Encoding::UTF_8),
+      "http://\xFF".dup.force_encoding(Encoding::UTF_8),
+      ["http://example.com/\xC3\x28".b, ""].join.force_encoding(Encoding::UTF_8)
+    ]
+    bad.each do |b|
+      assert_nothing_raised { SearchUrl.unwrap(b) }
+      assert_equal "invalid", SearchUrl.unwrap(b).status.to_s
+      assert_nothing_raised { SearchUrl.wrapper?(b) }
+      refute SearchUrl.wrapper?(b)
+    end
+
+    # ~20,000 chars, built here so the shared JSON stays small.
+    long = "https://example.com/#{'a' * 20_000}"
+    assert_nothing_raised { SearchUrl.unwrap(long) }
+    assert_equal "direct", SearchUrl.unwrap(long).status.to_s
+  end
+
   test "result is a frozen Data with the six interface fields" do
     %i[url host wrapped wrapper status reason].each do |member|
       assert SearchUrl::Result.members.include?(member)

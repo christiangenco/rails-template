@@ -5,6 +5,13 @@ require "base64"
 
 # Offline, pure search-URL unwrapping. No network, never raises.
 #
+# This function is NOT an SSRF guard. A hostname can resolve to 127.0.0.1,
+# 10.x or 169.254.169.254. Any code that fetches a URL from here must check
+# the resolved IP at connect time (refuse loopback, private, link-local,
+# CGNAT 100.64.0.0/10, the metadata IP, IPv6 ULA and link-local) and check
+# again on every redirect. The :invalid rules are a first filter for display
+# and dedupe only.
+#
 # Shared interface (see ~/tmp/misc-serper-unwrap-interface.md):
 # - SearchUrl.unwrap(url) -> SearchUrl::Result
 # - SearchUrl.wrapper?(url) -> true/false
@@ -46,24 +53,25 @@ module SearchUrl
     end
 
     def wrapper?(url)
-      return false unless url.is_a?(String) && !url.strip.empty?
+      return false unless url.is_a?(String) && !strip_safe(url).empty?
 
       uri = safe_parse(url)
       return false unless uri.is_a?(URI::HTTP)
 
       !wrapper_for(normalized_host(uri.host), uri.path).nil?
-    rescue URI::Error, ArgumentError
+    rescue URI::Error, ArgumentError, Encoding::CompatibilityError
       false
     end
 
     private
 
     def unwrap_level(input, depth)
-      unless input.is_a?(String) && !input.strip.empty?
-        return invalid_result("empty or not a string")
-      end
+      return invalid_result("empty or not a string") unless input.is_a?(String)
 
-      uri = safe_parse(input.strip)
+      stripped = strip_safe(input)
+      return invalid_result("empty or not a string") if stripped.empty?
+
+      uri = safe_parse(stripped)
       return invalid_result("unparseable URL") if uri.nil?
       return invalid_result("non-http(s) scheme") unless uri.is_a?(URI::HTTP)
       return invalid_result("credentials in URL") if uri.user || uri.password
@@ -114,7 +122,7 @@ module SearchUrl
           status: :invalid, reason: reason
         )
       end
-    rescue URI::Error, ArgumentError => e
+    rescue URI::Error, ArgumentError, Encoding::CompatibilityError => e
       invalid_result("unparseable URL (#{e.class.name.split('::').last})")
     end
 
@@ -122,6 +130,15 @@ module SearchUrl
       URI.parse(str)
     rescue URI::Error, ArgumentError
       nil
+    end
+
+    # String#strip raises Encoding::CompatibilityError on a string with
+    # invalid UTF-8 bytes. Scrub to the replacement character first so
+    # unwrap and wrapper? stay raise-free on any input.
+    def strip_safe(str)
+      str.strip
+    rescue Encoding::CompatibilityError
+      str.scrub("\uFFFD").strip
     end
 
     # Detection is by host AND path. Only exact "google.com" (after www.
@@ -227,13 +244,19 @@ module SearchUrl
     def ip_literal?(host)
       return true if host.include?(":") # IPv6 literal
 
-      parts = host.split(".")
-      parts.length == 4 && parts.all? { |p| p.match?(/\A\d{1,3}\z/) }
+      # Any label count (1 or more): every label is all decimal digits, or
+      # hex with a 0x prefix. Covers 2130706433, 127.1, 0x7f.0.0.1,
+      # 0x7f000001, 0177.0.0.1 and the normal 4-part form.
+      host.split(".").all? { |label| label.match?(/\A(?:\d+|0x\h*)\z/i) }
     end
 
     def private_host?(host)
+      # Single-label hosts (http://intranet/, http://router/) have no public
+      # name to resolve: refuse them like the dot-suffixes below.
+      return true unless host.include?(".")
+
       host == "localhost" ||
-        host.end_with?(".localhost", ".local", ".internal", ".lan", ".arpa")
+        host.end_with?(".localhost", ".local", ".internal", ".lan", ".arpa", ".home", ".corp")
     end
 
     def invalid_result(reason)

@@ -416,5 +416,159 @@
       "status": "invalid",
       "reason": "empty or not a string"
     }
+  },
+  {
+    "input": "http://2130706433/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://127.1/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://0x7f.0.0.1/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://0x7f000001/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://0177.0.0.1/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://127.0.0.1/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "IP literal host"
+    }
+  },
+  {
+    "input": "http://intranet/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "private host"
+    }
+  },
+  {
+    "input": "http://router/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "private host"
+    }
+  },
+  {
+    "input": "http://foo.home/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "private host"
+    }
+  },
+  {
+    "input": "http://foo.corp/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "private host"
+    }
+  },
+  {
+    "input": "http://example.com/\u0000",
+    "expected": {
+      "url": "http://example.com/",
+      "host": "example.com",
+      "wrapped": false,
+      "wrapper": null,
+      "status": "direct",
+      "reason": null
+    }
+  },
+  {
+    "input": "http://a\u0000b.com/",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": false,
+      "wrapper": null,
+      "status": "invalid",
+      "reason": "unparseable URL"
+    }
+  },
+  {
+    "input": "https://www.bing.com/ck/a?u=a1__4AAUJJTv8",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "bing_ck",
+      "status": "opaque_wrapper",
+      "reason": null
+    }
+  },
+  {
+    "input": "https://www.bing.com/ck/a?u=__4AAUJJTv8",
+    "expected": {
+      "url": null,
+      "host": null,
+      "wrapped": true,
+      "wrapper": "bing_ck",
+      "status": "opaque_wrapper",
+      "reason": null
+    }
   }
 ]

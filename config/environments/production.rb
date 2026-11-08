@@ -16,8 +16,10 @@ Rails.application.configure do
   # Full error reports are disabled.
   config.consider_all_requests_local = false
 
-  # Route exceptions through the application router (Phase 13)
-  config.exceptions_app = routes
+  # Route exceptions through the application router, wrapped so the original request's malformed
+  # body or query string can never raise inside the exceptions app (failsafe 500).
+  require_relative "../../lib/safe_exceptions_app"
+  config.exceptions_app = SafeExceptionsApp.new(routes)
 
   # Turn on fragment caching in view templates.
   config.action_controller.perform_caching = true

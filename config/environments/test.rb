@@ -25,6 +25,12 @@ Rails.application.configure do
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
 
+  # Match production: exceptions are served by ErrorsController through the routes exceptions app
+  # (production.rb wraps it in SafeExceptionsApp). ShowExceptions bakes the exceptions app in at
+  # boot, so tests cannot swap it per request.
+  require_relative "../../lib/safe_exceptions_app"
+  config.exceptions_app = SafeExceptionsApp.new(routes)
+
   # Disable request forgery protection in test environment.
   config.action_controller.allow_forgery_protection = false
 

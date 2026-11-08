@@ -23,20 +23,66 @@ class ErrorsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Production behavior: config.exceptions_app = routes (config/environments/production.rb). A scanner
-  # POSTs a body with invalid encoding to a path that does not exist; Rails raises RoutingError, the
-  # exceptions app re-dispatches to errors#not_found with the same bad body, and any callback there
-  # that reads params parses the body and raises ActionController::BadRequest INSIDE the exceptions
-  # app. Rails then logs "Error during failsafe response" and answers 500 instead of 404.
-  test "POST with invalid encoding to unknown routes gets 404 or 400, never 500" do
+  # POSTs a body with invalid encoding to a path that does not exist; Rails raises RoutingError before
+  # any params parsing, the exceptions app re-dispatches to errors#not_found through SafeExceptionsApp,
+  # and the answer must be the routed 404 page — exactly 404, never the failsafe 500.
+  test "POST with invalid encoding to unknown routes gets exactly 404, never 500" do
     with_production_error_handling do
       [ "/", "/_next", "/api" ].each do |path|
         post path, params: "a=%FF%FE", headers: { "CONTENT_TYPE" => "application/x-www-form-urlencoded" }
-        assert_includes [ 404, 400 ], response.status,
-          "#{path}: expected 404 or 400, got #{response.status} (500 = failsafe response)"
+        assert_equal 404, response.status,
+          "#{path}: expected 404, got #{response.status} (500 = failsafe response)"
         assert_equal "text/html", response.media_type
         assert response.body.include?("Page not found"),
           "#{path}: expected the real 404 page HTML, got #{response.body.bytesize} bytes"
+        assert_not response.body.include?("%FF%FE"),
+          "#{path}: the response must not echo the request body"
       end
+    end
+  end
+
+  # Scanner probes ask for unknown paths in every format. Each must answer the ROUTED 404 page (the
+  # application-layout HTML, not the static public/404.html fallback) with exactly 404, and none of
+  # the request's own data — query string or body — may leak into the response.
+  [ "/gxb-probe/secrets.json", "/x.yml", "/env.txt", "/gxb-probe/a.xml" ].each do |path|
+    test "unknown scanner path #{path} answers the routed 404 page with no request data" do
+      with_production_error_handling do
+        get path, env: {
+          "QUERY_STRING" => "q=gxb-sentinel-query",
+          "rack.input" => StringIO.new("a=gxb-sentinel-body"),
+          "CONTENT_TYPE" => "application/x-www-form-urlencoded"
+        }
+        assert_equal 404, response.status
+        assert_equal "text/html", response.media_type
+        assert response.body.include?("Page not found"),
+          "expected the routed 404 page HTML, got #{response.body.bytesize} bytes"
+        assert_not response.body.include?("gxb-sentinel-query"),
+          "the response must not echo the query string"
+        assert_not response.body.include?("gxb-sentinel-body"),
+          "the response must not echo the request body"
+      end
+    end
+  end
+
+  # The real-world Accept-header variant of the same probe: an unknown path asked for as JSON.
+  test "unknown path with Accept: application/json answers the routed 404 page" do
+    with_production_error_handling do
+      get "/secrets.json", headers: { "ACCEPT" => "application/json" }
+      assert_equal 404, response.status
+      assert_equal "text/html", response.media_type
+      assert response.body.include?("Page not found"),
+        "expected the routed 404 page HTML, got #{response.body.bytesize} bytes"
+    end
+  end
+
+  # A malformed query string on a path that DOES exist is different: params parsing raises
+  # ActionController::BadRequest during the normal dispatch, above where the errors controller's
+  # rescue_from applies, so the answer is Rails' own 400 page (HTML) — still never the failsafe 500.
+  test "a malformed query string on an existing route answers 400, never 500" do
+    with_production_error_handling do
+      get "/", env: { "QUERY_STRING" => "q=%FF%FE" }
+      assert_equal 400, response.status
+      assert_equal "text/html", response.media_type
     end
   end
 

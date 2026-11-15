@@ -4,7 +4,7 @@ ruby file: ".ruby-version"
 
 gem "rails", "~> 8.1"
 gem "sqlite3", ">= 2.1"
-gem "puma", "~> 7.2"  # ~> 7.2 keeps us on the 7.x line: gets the 7.2.1 CVE fix, avoids the 8.0 major
+gem "puma", "~> 7.2", ">= 7.2.2"  # stays on 7.x; 7.2.2 floor for GHSA-rf6g-xhmp-gm7v, GHSA-x646-wp7c-h9mg, GHSA-xw3h-pgr9-3vg7 (Nov 14)
 gem "bootsnap", require: false
 
 # Frontend

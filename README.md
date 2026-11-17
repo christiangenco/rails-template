@@ -150,6 +150,19 @@ Update `config/environments/production.rb`:
 config.action_mailer.default_url_options = { host: "myapp.com" }
 ```
 
+### Analytics: pageviews and slow pages
+
+`app/middleware/analytics_middleware.rb` sends one `pageview` event per request with `status`, `duration_ms` and `controller_action` (for example `properties#show`; empty for a path that matches no route). analytics.gxb.vc computes slow pages from these pageviews per route. The app does not send `SlowRequest` exception events and does not collect slow SQL.
+
+To adopt this in an app that still sends `SlowRequest`:
+
+1. Copy `app/middleware/analytics_middleware.rb` from this template. If the app's middleware is customized (for example TriGate's sensitive-route handling), keep those parts and make only two changes: add `controller_action: controller_action(env)` to the pageview `track` call, and delete the `SlowRequest` block.
+2. In `config/initializers/analytics.rb`, delete the `sql.active_record` subscriber that fills `env["analytics.slow_sql"]`.
+3. Delete `SLOW_MS`, `multipart?` and the old SlowRequest tests. Copy `test/middleware/analytics_middleware_test.rb`.
+4. Run the suite, commit, deploy. Check with `analytics-cli` that new pageviews have `controller_action` and that no new `SlowRequest` events arrive.
+
+Only the route name, counts and durations are added. No messages, SQL, IDs, IPs or query strings.
+
 ---
 
 ## Deployment

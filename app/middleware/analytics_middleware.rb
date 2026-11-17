@@ -1,6 +1,5 @@
 class AnalyticsMiddleware
   SKIP_PATHS = %w[/health /assets /packs].freeze
-  SLOW_MS = 2_000
 
   def initialize(app)
     @app = app
@@ -14,31 +13,15 @@ class AnalyticsMiddleware
     request = ActionDispatch::Request.new(env)
 
     unless skip_tracking?(request)
-      user_id = env["analytics.user_id"] # set by Trackable concern
-      session_id = request.session.id&.to_s rescue nil
-
       AnalyticsClient.track(
         event_type: "pageview",
         request: request,
         status: status,
         duration_ms: duration,
-        user_id: user_id,
-        session_id: session_id
+        controller_action: controller_action(env),
+        user_id: env["analytics.user_id"], # set by Trackable concern
+        session_id: (request.session.id&.to_s rescue nil)
       )
-
-      if duration >= SLOW_MS && status.to_i.between?(200, 399) && !multipart?(request)
-        AnalyticsClient.track(
-          event_type: "exception",
-          request: request,
-          status: status,
-          duration_ms: duration,
-          user_id: user_id,
-          session_id: session_id,
-          error_class: "SlowRequest",
-          error_message: "#{controller_action(env)} took #{duration}ms",
-          properties: { slow_sql: env["analytics.slow_sql"] }.compact
-        )
-      end
     end
 
     [ status, headers, response ]
@@ -55,16 +38,13 @@ class AnalyticsMiddleware
     SKIP_PATHS.any? { |p| request.path.start_with?(p) }
   end
 
-  def multipart?(request)
-    request.media_type == "multipart/form-data"
-  end
-
-  # Route identity instead of the raw path, so /properties/142 and
-  # /properties/7 fingerprint as the same issue instead of two.
+  # "properties#show", so analytics can rank slow routes from pageview
+  # durations without a per-request exception. nil when nothing routed (the
+  # router's 404 for an unknown path); AnalyticsClient drops nil keys.
   def controller_action(env)
     path_params = env["action_dispatch.request.path_parameters"]
-    return env["REQUEST_METHOD"] unless path_params
+    return unless path_params&.key?(:controller) && path_params&.key?(:action)
 
-    "#{env["REQUEST_METHOD"]} #{path_params[:controller]}##{path_params[:action]}"
+    "#{path_params[:controller]}##{path_params[:action]}"
   end
 end
